@@ -19,6 +19,14 @@
 			"AdditionalDependencies": [
 				"Engine"
 			]
+		},
+		{
+			"Name": "MerinoStatics",
+			"Type": "Runtime",
+			"LoadingPhase": "Default",
+			"AdditionalDependencies": [
+				"Engine"
+			]
 		}
 	],
 	"Plugins": [

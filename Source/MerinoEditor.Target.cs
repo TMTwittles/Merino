@@ -10,6 +10,6 @@ public class MerinoEditorTarget : TargetRules
 		Type = TargetType.Editor;
 		DefaultBuildSettings = BuildSettingsVersion.V4;
 		IncludeOrderVersion = EngineIncludeOrderVersion.Unreal5_3;
-		ExtraModuleNames = new List<string>() { "Merino", "MerinoGameplay" };
+		ExtraModuleNames = new List<string>() {"Merino", "MerinoGameplay","MerinoStatics"};
 	}
 }
