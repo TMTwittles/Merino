@@ -50,6 +50,8 @@ AMerinoCharacter::AMerinoCharacter()
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 
+	bIsAiming = 0;
+
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
 }
@@ -71,7 +73,6 @@ void AMerinoCharacter::BeginPlay()
 
 //////////////////////////////////////////////////////////////////////////
 // Input
-
 void AMerinoCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	// Set up action bindings
@@ -86,6 +87,13 @@ void AMerinoCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 
 		// Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AMerinoCharacter::Look);
+
+		// Start aiming
+		EnhancedInputComponent->BindAction(StartAimingAction, ETriggerEvent::Started, this, &AMerinoCharacter::EnterAim);
+		EnhancedInputComponent->BindAction(StartAimingAction, ETriggerEvent::Completed, this, &AMerinoCharacter::ExitAim);
+
+		// Aiming
+		//EnhancedInputComponent->BindAction(AimingAction, ETriggerEvent::Triggered, this, &AMerinoCharacter::Aim);
 	}
 	else
 	{
@@ -118,6 +126,11 @@ void AMerinoCharacter::Move(const FInputActionValue& Value)
 
 void AMerinoCharacter::Look(const FInputActionValue& Value)
 {
+	if (IsAiming())
+	{
+		return;
+	}
+
 	// input is a Vector2D
 	FVector2D LookAxisVector = Value.Get<FVector2D>();
 
@@ -127,4 +140,29 @@ void AMerinoCharacter::Look(const FInputActionValue& Value)
 		AddControllerYawInput(LookAxisVector.X);
 		AddControllerPitchInput(LookAxisVector.Y);
 	}
+}
+
+void AMerinoCharacter::EnterAim(const FInputActionValue& Value)
+{
+	bIsAiming = 1;
+	GetCharacterMovement()->bOrientRotationToMovement = false;
+}
+
+void AMerinoCharacter::ExitAim(const FInputActionValue& Value)
+{
+	bIsAiming = 0;
+	GetCharacterMovement()->bOrientRotationToMovement = true;
+}
+
+void AMerinoCharacter::Aim(const FInputActionValue& Value)
+{
+	if (IsAiming() == false)
+	{
+		return;
+	}
+}
+
+bool AMerinoCharacter::IsAiming() const
+{
+	return bIsAiming == 1;
 }
