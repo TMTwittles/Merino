@@ -4,4 +4,6 @@
 #include "Modules/ModuleManager.h"
 
 IMPLEMENT_PRIMARY_GAME_MODULE( FDefaultGameModuleImpl, MerinoGameplay, "MerinoGameplay" );
+
+DEFINE_LOG_CATEGORY(LogTemplateGameplayInvalidComponent);
  

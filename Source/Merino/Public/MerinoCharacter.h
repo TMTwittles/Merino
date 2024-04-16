@@ -7,6 +7,7 @@
 #include "Logging/LogMacros.h"
 #include "MerinoCharacter.generated.h"
 
+class UCharacterCameraOperatorComponent;
 class USpringArmComponent;
 class UCameraComponent;
 class UInputMappingContext;
@@ -20,7 +21,9 @@ class AMerinoCharacter : public ACharacter
 {
 	GENERATED_BODY()
 
-	/** Camera boom positioning the camera behind the character */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = CameraComponents, meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UCharacterCameraOperatorComponent> CameraOperatorComp;
+	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<USpringArmComponent> CameraBoom;
 

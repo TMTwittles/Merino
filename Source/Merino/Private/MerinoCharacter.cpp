@@ -10,6 +10,7 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
+#include "MerinoGameplay/Public/Camera/CharacterCameraOperatorComponent.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -39,9 +40,11 @@ AMerinoCharacter::AMerinoCharacter()
 	GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
 	GetCharacterMovement()->BrakingDecelerationFalling = 1500.0f;
 
+	// Create a CharacterCameraOperator, this operates the camera dynamically.
+	CameraOperatorComp = CreateDefaultSubobject<UCharacterCameraOperatorComponent>(TEXT("CameraOperator"));
+
 	// Create a camera boom (pulls in towards the player if there is a collision)
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
-	CameraBoom->SetupAttachment(RootComponent);
 	CameraBoom->TargetArmLength = 400.0f; // The camera follows at this distance behind the character	
 	CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller
 
@@ -50,6 +53,7 @@ AMerinoCharacter::AMerinoCharacter()
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 
+	// By default character is not aiming. 
 	bIsAiming = 0;
 
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
