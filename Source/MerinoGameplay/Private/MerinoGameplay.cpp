@@ -5,5 +5,5 @@
 
 IMPLEMENT_PRIMARY_GAME_MODULE( FDefaultGameModuleImpl, MerinoGameplay, "MerinoGameplay" );
 
-DEFINE_LOG_CATEGORY(LogTemplateGameplayInvalidComponent);
+DEFINE_LOG_CATEGORY(LogTemplateGameplayInvalidConfig);
  

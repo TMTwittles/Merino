@@ -41,7 +41,9 @@ AMerinoCharacter::AMerinoCharacter()
 	GetCharacterMovement()->BrakingDecelerationFalling = 1500.0f;
 
 	// Create a CharacterCameraOperator, this operates the camera dynamically.
+	// Starting mode is free look. 
 	CameraOperatorComp = CreateDefaultSubobject<UCharacterCameraOperatorComponent>(TEXT("CameraOperator"));
+	CameraOperatorComp->SetCameraOperationMode(ECameraOperationMode::FreeLook);
 
 	// Create a camera boom (pulls in towards the player if there is a collision)
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
@@ -150,12 +152,14 @@ void AMerinoCharacter::EnterAim(const FInputActionValue& Value)
 {
 	bIsAiming = 1;
 	GetCharacterMovement()->bOrientRotationToMovement = false;
+	CameraOperatorComp->SetCameraOperationMode(ECameraOperationMode::Aim);
 }
 
 void AMerinoCharacter::ExitAim(const FInputActionValue& Value)
 {
 	bIsAiming = 0;
 	GetCharacterMovement()->bOrientRotationToMovement = true;
+	CameraOperatorComp->SetCameraOperationMode(ECameraOperationMode::FreeLook);
 }
 
 void AMerinoCharacter::Aim(const FInputActionValue& Value)

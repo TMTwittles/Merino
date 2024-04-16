@@ -3,6 +3,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "CameraOperationMode.h"
 #include "CharacterCameraOperatorComponent.generated.h"
 
 class USpringArmComponent;
@@ -17,13 +18,22 @@ class MERINOGAMEPLAY_API UCharacterCameraOperatorComponent : public UActorCompon
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, Category = FreeLookCameraSettings, meta = (AllowPrivateAccess="true"))
+	UPROPERTY(EditAnywhere, Category = SharedCameraSettings, meta = (AllowPrivateAccess="true"))
 	float CharacterZOffset;
 
-	UPROPERTY(BlueprintReadOnly, Category=OperatorDetails, meta = (AllowPrivateAccess="true"))
-	FVector CalculatedLocation;
+	UPROPERTY(EditAnywhere, Category = SharedCameraSettings, meta = (AllowPrivateAccess="true"))
+	float CameraLerpSpeed;
 
-	UPROPERTY(BlueprintReadOnly, Category=OperatorDetails, meta = (AllowPrivateAccess="true"))
+	UPROPERTY(EditAnywhere, Category = AimCameraSettings, meta = (AllowPrivateAccess = "true"))
+	float CharacterAimXOffset;
+
+	UPROPERTY(BlueprintReadOnly, Category=OperatorConfig, meta=(AllowPrivateAccess="true"))
+	TEnumAsByte<ECameraOperationMode> ActiveMode;
+	UPROPERTY(BlueprintReadOnly, Category=OperatorConfig, meta = (AllowPrivateAccess="true"))
+	FVector TargetLocation;
+	UPROPERTY(BlueprintReadOnly, Category=OperatorConfig, meta = (AllowPrivateAccess="true"))
+	FVector CalculatedLocation;
+	UPROPERTY(BlueprintReadOnly, Category=OperatorConfig, meta = (AllowPrivateAccess="true"))
 	TObjectPtr<USpringArmComponent> CameraSpringArm;
 
 public:	
@@ -37,10 +47,14 @@ protected:
 public:	
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+	void SetCameraOperationMode(ECameraOperationMode InCameraOperationMode);
 
 private:
 	// Operates the camera, should be called every frame. 
-	void OperateCamera();
-
+	void OperateCamera(float DeltaTime);
+	// Calculates camera position when in free look camera operation mode. TODO: This function should add functionality for reading player input. 
+	void CalculateFreeLookCameraPosition();
+	// Calculates camera position when in aiming camera operation mode.
+	void CalculateAimCameraPosition();
 		
 };
