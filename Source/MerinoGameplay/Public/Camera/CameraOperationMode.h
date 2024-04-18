@@ -6,5 +6,6 @@ UENUM(BlueprintType)
 enum class ECameraOperationMode
 {
 	FreeLook UMETA(DisplayName = "Free look"),
-	Aim UMETA(DisplayName = "Aim")
+	Aim UMETA(DisplayName = "Aim"),
+	HipFire UMETA(DisplayName = "Hip fire")
 };
