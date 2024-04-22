@@ -1,12 +1,12 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 #include "MerinoMathStatics.h"
 
-float UMerinoMathStatics::GetUnsignedAngleBetweenTwoVectors(FVector A, FVector B)
+float UMerinoMathStatics::GetUnsignedAngleBetweenTwoVectors(const FVector A, const FVector B)
 {
 	return acos(FVector::DotProduct(A, B));
 }
 
-float UMerinoMathStatics::GetSignedAngleBetweenTwoVectorsRelativeToAxis(FVector A, FVector B, FVector Axis)
+float UMerinoMathStatics::GetSignedAngleBetweenTwoVectorsRelativeToAxis(const FVector A, const FVector B, const FVector Axis)
 {
 	float UnsignedAngleBetweenTwoVectors = GetUnsignedAngleBetweenTwoVectors(A, B);
 	FVector CrossProduct = FVector::CrossProduct(A, B);
