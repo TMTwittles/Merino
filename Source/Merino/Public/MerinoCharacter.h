@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Logging/LogMacros.h"
+#include "EquipableWeapon.h"
 #include "MerinoCharacter.generated.h"
 
 class UCharacterCameraOperatorComponent;
@@ -72,6 +73,15 @@ class AMerinoCharacter : public ACharacter
 	UPROPERTY(BlueprintReadOnly, Category = Aiming, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UTwoDimensionAimingComponent> AimingComp;
 
+	UPROPERTY(BlueprintReadOnly, Category= WeaponSettings, meta = (AllowPrivateAccess= "true"))
+	TObjectPtr<AEquipableWeapon> EquipedWeapon;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category= WeaponSettings, meta = (AllowPrivateAccess= "true"))
+	TSubclassOf<AEquipableWeapon> WeaponType;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = WeaponSettings, meta = (AllowPrivateAccess= "true"))
+	FName WeaponAttachmentSocket;
+	
 public:
 	AMerinoCharacter();
 
@@ -111,6 +121,8 @@ private:
 	/** Handles the exit when aiming or shooting */
 	void ExitAimingOrShooting();
 
+	void SpawnWeapon();
+
 public:
 	/** Determines if character is aiming weapon or not */
 	UFUNCTION(BlueprintPure)
@@ -119,6 +131,9 @@ public:
 	/** Determines if character is firing weapon or not */
 	UFUNCTION(BlueprintPure)
 	bool IsFiring() const;
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	AEquipableWeapon* GetEquippedWeapon() const;
 
 	/** Returns CameraBoom subobject **/
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }

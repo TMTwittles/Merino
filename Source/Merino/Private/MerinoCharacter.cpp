@@ -16,6 +16,7 @@
 #include "MerinoDebugStatics.h"
 #include "MerinoMathStatics.h"
 
+
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
 //////////////////////////////////////////////////////////////////////////
@@ -78,6 +79,9 @@ void AMerinoCharacter::BeginPlay()
 
 	// Set camera opertion mode.
 	CameraOperatorComp->SetCameraOperationMode(ECameraOperationMode::FreeLook);
+
+	// Spawn weapon
+	SpawnWeapon();
 
 	//Add Input Mapping Context
 	if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
@@ -258,6 +262,29 @@ void AMerinoCharacter::ExitAimingOrShooting()
 	GetCharacterMovement()->bUseControllerDesiredRotation = false;
 }
 
+void AMerinoCharacter::SpawnWeapon()
+{
+	if (WeaponType == nullptr)
+	{
+		UE_LOG(LogTemplateCharacter, Error, TEXT("Unable to spawn weapon due to invalid weapon type."));
+		return;
+	}
+
+	if (GetMesh()->DoesSocketExist(WeaponAttachmentSocket) == false)
+	{
+		UE_LOG(LogTemplateCharacter, Error, TEXT("Unable to spawn weapon with socket name %s, unable to locate socket on the character mesh."), WeaponAttachmentSocket);
+		return;
+	}
+
+	FActorSpawnParameters WeaponSpawnParameters;
+	WeaponSpawnParameters.Owner = this; 
+	WeaponSpawnParameters.Instigator = this; 
+
+	EquipedWeapon = GetWorld()->SpawnActor<AEquipableWeapon>(WeaponType, WeaponSpawnParameters);
+	EquipedWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, WeaponAttachmentSocket);
+	EquipedWeapon->ConfigureWeaponPostAttachment();
+}
+
 bool AMerinoCharacter::IsAiming() const
 {
 	return bIsAiming == 1;
@@ -266,6 +293,11 @@ bool AMerinoCharacter::IsAiming() const
 bool AMerinoCharacter::IsFiring() const
 {
 	return bIsShooting == 1;
+}
+
+AEquipableWeapon* AMerinoCharacter::GetEquippedWeapon() const
+{
+	return EquipedWeapon;
 }
 
 void AMerinoCharacter::SetControlRotationToDirection(const FVector TargetDirection)
