@@ -43,3 +43,20 @@ FVector UMerinoMathStatics::CalculateCentroid(FVector P1, FVector P2, FVector P3
 {
 	return (P1 + P2 + P3) / 3;
 }
+
+float UMerinoMathStatics::ClampFloatToValues(const float InFloat, const TArray<float>& Values)
+{
+	float ClampedFloat = 0.0f;
+	float Delta = 0.0f;
+	float SmallestDelta = FLT_MAX;
+	for (float ClampableValue : Values)
+	{
+		Delta = FMath::Abs(ClampableValue - InFloat);
+		if (Delta < SmallestDelta)
+		{
+			SmallestDelta = Delta;
+			ClampedFloat = ClampableValue;
+		}
+	}
+	return ClampedFloat;
+}

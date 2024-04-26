@@ -18,4 +18,6 @@ public:
 	static float GetPitchFromQuat(FQuat Quat);
 	static FQuat BuildQuatEuler(float Yaw, float Pitch, float Roll);
 	static FVector CalculateCentroid(FVector P1, FVector P2, FVector P3);
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	static float ClampFloatToValues(const float InFloat, const TArray<float>& Values);
 };
