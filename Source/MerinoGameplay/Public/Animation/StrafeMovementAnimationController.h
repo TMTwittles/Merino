@@ -6,6 +6,7 @@
 #include "StrafeMovementAnimationController.generated.h"
 
 class UAnimSequence;
+class UBlendSpace;
 
 UENUM(BlueprintType)
 enum class EStrafeDirection : uint8 {
@@ -38,6 +39,8 @@ struct FStrafeAnimation
     TObjectPtr<UAnimSequence> TransitionAnim;
     UPROPERTY(EditAnywhere, Category = StrafeAnimation)
     TObjectPtr<UAnimSequence> LocomotionAnim;
+    UPROPERTY(EditAnywhere, Category = StrafeAnimation)
+    TObjectPtr<UBlendSpace> StrafeMovementBS;
 };
 
 /**
@@ -66,6 +69,8 @@ public:
     UAnimSequence* GetActiveStrafeTransitionAnim() const;
     UFUNCTION(BlueprintCallable, BlueprintPure)
     UAnimSequence* GetActiveStrafeLocomotionAnim() const;
+    UFUNCTION(BlueprintCallable, BlueprintPure)
+    UBlendSpace* GetActiveStrafeBlendSpace() const;
     UFUNCTION(BlueprintCallable, BlueprintPure)
     UAnimSequence* GetPreviousStrafeTransitionAnim() const;
     UFUNCTION(BlueprintCallable, BlueprintPure)

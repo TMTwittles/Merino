@@ -3,6 +3,7 @@
 #include "Animation/StrafeMovementAnimationController.h"
 #include "MerinoGameplay.h"
 #include "Animation/AnimSequence.h"
+#include "Animation/BlendSpace.h"
 
 void UStrafeMovementAnimationController::AddDirections(TArray<FStrafeAnimation> InStrafeAnimations)
 {
@@ -43,6 +44,11 @@ UAnimSequence* UStrafeMovementAnimationController::GetActiveStrafeTransitionAnim
 UAnimSequence* UStrafeMovementAnimationController::GetActiveStrafeLocomotionAnim() const
 {
 	return ActiveStrafeAnimation.LocomotionAnim;
+}
+
+UBlendSpace* UStrafeMovementAnimationController::GetActiveStrafeBlendSpace() const
+{
+	return ActiveStrafeAnimation.StrafeMovementBS;
 }
 
 UAnimSequence* UStrafeMovementAnimationController::GetPreviousStrafeTransitionAnim() const
