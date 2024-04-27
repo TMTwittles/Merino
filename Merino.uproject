@@ -29,6 +29,15 @@
 				"Engine",
 				"CoreUObject"
 			]
+		},
+		{
+			"Name": "MerinoData",
+			"Type": "Runtime",
+			"LoadingPhase": "Default",
+			"AdditionalDependencies": [
+				"Engine",
+				"CoreUObject"
+			]
 		}
 	],
 	"Plugins": [

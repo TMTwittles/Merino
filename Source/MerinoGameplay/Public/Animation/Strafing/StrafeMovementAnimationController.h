@@ -5,8 +5,6 @@
 #include "CoreMinimal.h"
 #include "StrafeMovementAnimationController.generated.h"
 
-class UAnimSequence;
-class UBlendSpace;
 
 UENUM(BlueprintType)
 enum class EStrafeDirection : uint8 {
@@ -18,29 +16,31 @@ enum class EStrafeDirection : uint8 {
 };
 
 USTRUCT(BlueprintType)
+struct FStrafeAnimationMovementRange
+{
+    GENERATED_USTRUCT_BODY()
+
+    UPROPERTY(EditAnywhere)
+    float MinDegrees;
+    UPROPERTY(EditAnywhere)
+    float MixDegrees;
+};
+
+USTRUCT(BlueprintType)
 struct FStrafeAnimation
 {
     GENERATED_USTRUCT_BODY()
 
-    // Priority ranges
-    UPROPERTY(EditAnywhere, Category = StrafePriorityRange)
-    float PriorityMinDegrees;
-    UPROPERTY(EditAnywhere, Category = StrafePriorityRange)
-    float PriorityMaxDegrees;
-
-    // Valid ranges
-    UPROPERTY(EditAnywhere, Category = StrafeDefaultRange)
-    float MinDegrees;
-    UPROPERTY(EditAnywhere, Category = StrafeDefaultRange)
-    float MaxDegrees;
-
-    // Animations
-    UPROPERTY(EditAnywhere, Category = StrafeAnimation)
-    TObjectPtr<UAnimSequence> TransitionAnim;
-    UPROPERTY(EditAnywhere, Category = StrafeAnimation)
-    TObjectPtr<UAnimSequence> LocomotionAnim;
-    UPROPERTY(EditAnywhere, Category = StrafeAnimation)
-    TObjectPtr<UBlendSpace> StrafeMovementBS;
+    // Movement ranges to trigger the animation. Stored as array 
+    // to allow multiple ranges, i.e -180 - -90, 90 - 180.
+    UPROPERTY(EditAnywhere)
+    TArray<FStrafeAnimationMovementRange> MovementRanges;
+    
+    // Threshold strafe animation can play before need to change.
+    // If movement range is -45 to 45 degrees and threshold is 1.25f, then if movement will need
+    // exceed the threshold of -56.25 to 56.25 degrees before needing to change strafe animation.
+    UPROPERTY(EditAnywhere)
+    float ChangeStrafeDirectionThresholdAmount;
 };
 
 /**
@@ -65,16 +65,6 @@ public:
     void AddDirections(TArray<FStrafeAnimation> InStrafeAnimations);
     UFUNCTION(BlueprintCallable)
     void EvaluateActiveStrafeAnimation(float InStrafeDirectionDegrees);
-    UFUNCTION(BlueprintCallable, BlueprintPure)
-    UAnimSequence* GetActiveStrafeTransitionAnim() const;
-    UFUNCTION(BlueprintCallable, BlueprintPure)
-    UAnimSequence* GetActiveStrafeLocomotionAnim() const;
-    UFUNCTION(BlueprintCallable, BlueprintPure)
-    UBlendSpace* GetActiveStrafeBlendSpace() const;
-    UFUNCTION(BlueprintCallable, BlueprintPure)
-    UAnimSequence* GetPreviousStrafeTransitionAnim() const;
-    UFUNCTION(BlueprintCallable, BlueprintPure)
-    UAnimSequence* GetPreviousStrafeLocomotionAnim() const;
     UFUNCTION(BlueprintCallable, BlueprintPure)
     bool ShouldPivot() const;
 private:

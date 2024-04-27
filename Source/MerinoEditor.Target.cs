@@ -14,5 +14,6 @@ public class MerinoEditorTarget : TargetRules
 		ExtraModuleNames.Add("Merino");
 		ExtraModuleNames.Add("MerinoGameplay");
 		ExtraModuleNames.Add("MerinoStatics");
+		ExtraModuleNames.Add("MerinoData");
 	}
 }

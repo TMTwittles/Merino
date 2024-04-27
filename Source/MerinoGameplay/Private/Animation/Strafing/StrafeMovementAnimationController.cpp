@@ -1,6 +1,6 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "Animation/StrafeMovementAnimationController.h"
+#include "Animation/Strafing/StrafeMovementAnimationController.h"
 #include "MerinoGameplay.h"
 #include "Animation/AnimSequence.h"
 #include "Animation/BlendSpace.h"
@@ -68,17 +68,11 @@ bool UStrafeMovementAnimationController::ShouldPivot() const
 
 bool UStrafeMovementAnimationController::StrafeAnimationInPriorityRange(const FStrafeAnimation& StrafeAnimation, const float DirectionDegrees) const
 {
-	return (DirectionDegrees >= StrafeAnimation.PriorityMinDegrees &&
-		DirectionDegrees <= StrafeAnimation.PriorityMaxDegrees);
+	return true;
 }
 
 bool UStrafeMovementAnimationController::StrafeAnimationInRange(const FStrafeAnimation& StrafeAnimation, const float DirectionDegrees) const
 {
-	float MinDegrees = StrafeAnimation.PriorityMinDegrees * 1.25;
-	MinDegrees = FMath::Clamp(MinDegrees, -180.0f, 180.0f);
-	float MaxDegrees = StrafeAnimation.PriorityMaxDegrees * 1.25;
-	MaxDegrees = FMath::Clamp(MaxDegrees, -180.0f, 180.0f);
-	return (DirectionDegrees >= MinDegrees &&
-		DirectionDegrees <= MaxDegrees);
+	return true;
 }
 
