@@ -66,7 +66,7 @@ class MERINOGAMEPLAY_API UCharacterCameraOperatorComponent : public UActorCompon
 
 	// Operator config
 	UPROPERTY(BlueprintReadOnly, Category=OperatorConfig, meta=(AllowPrivateAccess="true"))
-	TEnumAsByte<ECameraOperationMode> ActiveMode;
+	ECameraOperationMode ActiveMode;
 	UPROPERTY(BlueprintReadOnly, Category=OperatorConfig, meta=(AllowPrivateAccess="true"))
 	TObjectPtr<USpringArmComponent> CameraSpringArm;
 	// Reference the PlayerController to access the control rotation.

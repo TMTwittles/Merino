@@ -72,7 +72,7 @@ void UCharacterCameraOperatorComponent::SetCameraOperationMode(ECameraOperationM
 		EnterHipFireCameraMode();
 		break;
 	default:
-		UE_LOG(LogTemplateGameplayInvalidConfig, Warning, TEXT("No enter function for mode: %s"), *UEnum::GetValueAsString(ActiveMode.GetValue()));
+		UE_LOG(LogTemplateGameplayInvalidConfig, Warning, TEXT("No enter function for mode: %s"), *UEnum::GetValueAsString(ActiveMode));
 		break;
 	}
 }
@@ -102,7 +102,7 @@ void UCharacterCameraOperatorComponent::OperateCamera(float DeltaTime)
 			CalculateHipFireCameraPosition();
 			break;
 		default:
-			UE_LOG(LogTemplateGameplayInvalidConfig, Error, TEXT("Unable to operate camera with mode: %s"), *UEnum::GetValueAsString(ActiveMode.GetValue()));
+			UE_LOG(LogTemplateGameplayInvalidConfig, Error, TEXT("Unable to operate camera with mode: %s"), *UEnum::GetValueAsString(ActiveMode));
 			break;
 	}
 

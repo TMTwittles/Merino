@@ -17,7 +17,6 @@ float UMerinoMathStatics::GetSignedAngleBetweenTwoVectorsRelativeToAxis(const FV
 	float MinAngleDegrees = -180.0f;
 	float MaxAngle = FMath::DegreesToRadians(MaxAngleDegrees);
 	float MinAngle = FMath::DegreesToRadians(MinAngleDegrees);
-	return DotMultiplier * UnsignedAngleBetweenTwoVectors;
 	return FMath::Clamp(DotMultiplier * UnsignedAngleBetweenTwoVectors, MinAngle, MaxAngle);
 }
 
