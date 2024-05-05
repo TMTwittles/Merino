@@ -1,7 +1,6 @@
 // Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "Character/TwoDimensionAimingComponent.h"
+#include "MerinoDebugStatics.h"
 
 // Sets default values for this component's properties
 UTwoDimensionAimingComponent::UTwoDimensionAimingComponent()
@@ -28,7 +27,7 @@ void UTwoDimensionAimingComponent::BeginPlay()
 void UTwoDimensionAimingComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
+	UMerinoDebugStatics::DrawSingleFrameDebugLine(GetWorld(), GetOwner()->GetActorLocation(), GetOwner()->GetActorLocation() + AimDirection * 2000.0f, FColor::Red);
 	// ...
 }
 

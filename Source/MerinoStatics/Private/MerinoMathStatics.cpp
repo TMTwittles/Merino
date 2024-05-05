@@ -1,6 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 #include "MerinoMathStatics.h"
 
+const float UMerinoMathStatics::FULL_ROTATION_DEGREES = 360.0f;
+
 float UMerinoMathStatics::GetUnsignedAngleBetweenTwoVectors(const FVector A, const FVector B)
 {
 	return acos(FVector::DotProduct(A, B));
@@ -11,13 +13,7 @@ float UMerinoMathStatics::GetSignedAngleBetweenTwoVectorsRelativeToAxis(const FV
 	float UnsignedAngleBetweenTwoVectors = GetUnsignedAngleBetweenTwoVectors(A, B);
 	FVector CrossProduct = FVector::CrossProduct(A, B);
 	float Dot = FVector::DotProduct(CrossProduct, Axis);
-	// Set dot multiplier to either 1.0 or -1.0 based dot product of cross product.
-	float DotMultiplier = Dot > 0.0f ? 1.0f : -1.0f;
-	float MaxAngleDegrees = 180.0f;
-	float MinAngleDegrees = -180.0f;
-	float MaxAngle = FMath::DegreesToRadians(MaxAngleDegrees);
-	float MinAngle = FMath::DegreesToRadians(MinAngleDegrees);
-	return FMath::Clamp(DotMultiplier * UnsignedAngleBetweenTwoVectors, MinAngle, MaxAngle);
+	return FMath::Sign(Dot) * UnsignedAngleBetweenTwoVectors;
 }
 
 float UMerinoMathStatics::GetYawFromQuat(FQuat Quat)
@@ -58,4 +54,32 @@ float UMerinoMathStatics::ClampFloatToValues(const float InFloat, const TArray<f
 		}
 	}
 	return ClampedFloat;
+}
+
+float UMerinoMathStatics::ConvertToClockWiseRotationDegrees(const float InSignedRotationDegrees)
+{
+	float ClockWiseRotation = InSignedRotationDegrees;
+	float Sign = FMath::Sign(InSignedRotationDegrees);
+	if (Sign < 0.0f)
+	{
+		float UnsignedRotationDegrees = FMath::Abs(InSignedRotationDegrees);
+		int NumClockWiseRotations = InSignedRotationDegrees / FULL_ROTATION_DEGREES;
+		NumClockWiseRotations = NumClockWiseRotations == 0 ? 1 : NumClockWiseRotations;
+		ClockWiseRotation = InSignedRotationDegrees + NumClockWiseRotations * FULL_ROTATION_DEGREES;
+	}
+	return ClockWiseRotation;
+}
+
+bool UMerinoMathStatics::IsFloatInArbitraryRange(const float Value, const float Bound01, const float Bound02)
+{
+	bool bFloatInRange = false;
+	if (Bound01 <= Bound02)
+	{
+		bFloatInRange = FMath::IsWithinInclusive(Value, Bound01, Bound02);
+	}
+	else if (Bound01 > Bound02)
+	{
+		bFloatInRange = FMath::IsWithinInclusive(Value, Bound02, Bound01);
+	}
+	return bFloatInRange;
 }

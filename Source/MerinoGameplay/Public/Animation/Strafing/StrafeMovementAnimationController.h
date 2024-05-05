@@ -5,70 +5,56 @@
 #include "CoreMinimal.h"
 #include "StrafeMovementAnimationController.generated.h"
 
-
+// NOTE: Order of enums matter for construction. 
 UENUM(BlueprintType)
 enum class EStrafeDirection : uint8 {
-    NONE UMETA(DisplayName="None"),
     FORWARD UMETA(DisplayName = "Forward"),
-    LEFT UMETA(DisplayName = "Left"),
     RIGHT UMETA(DisplayName = "Right"),
-    BACKWARD UMETA(DisplayName = "Backward")
+    BACKWARD UMETA(DisplayName = "Backward"),
+    LEFT UMETA(DisplayName = "Left")
 };
 
-USTRUCT(BlueprintType)
-struct FStrafeAnimationMovementRange
+/*
+* House the range for strafe movement. Note, all values are in degrees and positive.
+* For example forward strafe direction would have a strafe direction of 0 with min range of 45 and max range of 315 degrees.
+*/ 
+USTRUCT()
+struct FStrafeMovementRange
 {
     GENERATED_USTRUCT_BODY()
-
-    UPROPERTY(EditAnywhere)
-    float MinDegrees;
-    UPROPERTY(EditAnywhere)
-    float MixDegrees;
-};
-
-USTRUCT(BlueprintType)
-struct FStrafeAnimation
-{
-    GENERATED_USTRUCT_BODY()
-
-    // Movement ranges to trigger the animation. Stored as array 
-    // to allow multiple ranges, i.e -180 - -90, 90 - 180.
-    UPROPERTY(EditAnywhere)
-    TArray<FStrafeAnimationMovementRange> MovementRanges;
-    
-    // Threshold strafe animation can play before need to change.
-    // If movement range is -45 to 45 degrees and threshold is 1.25f, then if movement will need
-    // exceed the threshold of -56.25 to 56.25 degrees before needing to change strafe animation.
-    UPROPERTY(EditAnywhere)
-    float ChangeStrafeDirectionThresholdAmount;
+    float StrafeDirectionDegrees;
+    float StrafeDirectionDegreesUnwind;
+    float StrafeRangeDegrees;
 };
 
 /**
- * Object for operation strafe movement, allows setting thresholds for directions and 
- * provides access to different animations per direction. 
+ * Object for controlling strafe movement animations. 
  */
 UCLASS(BlueprintType)
 class MERINOGAMEPLAY_API UStrafeMovementAnimationController : public UObject
 {
 	GENERATED_BODY()
     
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = StrafeAnimations, meta = (AllowPrivateAccess = "True"))
-    FStrafeAnimation ActiveStrafeAnimation;
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = StrafeAnimations, meta = (AllowPrivateAccess = "True"))
-    FStrafeAnimation PreviousStrafeAnimation;
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = StrafeAnimations, meta = (AllowPrivateAccess= "True"))
-    uint8 bShouldPivot;
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=StrafeAnimations, meta=(AllowPrivateAccess="True"))
-    TArray<FStrafeAnimation> StrafeAnimations;
-public:
-    UFUNCTION(BlueprintCallable)
-    void AddDirections(TArray<FStrafeAnimation> InStrafeAnimations);
-    UFUNCTION(BlueprintCallable)
-    void EvaluateActiveStrafeAnimation(float InStrafeDirectionDegrees);
-    UFUNCTION(BlueprintCallable, BlueprintPure)
-    bool ShouldPivot() const;
-private:
-    bool StrafeAnimationInPriorityRange(const FStrafeAnimation& StrafeAnimation, const float DirectionDegrees) const;
-    bool StrafeAnimationInRange(const FStrafeAnimation& StrafeAnimation, const float DirectionDegrees) const;
+    UPROPERTY()
+    TArray<FStrafeMovementRange> MovementRanges;
+    UPROPERTY()
+    int ActiveStrafeDirection;
 
+public:
+
+    UStrafeMovementAnimationController();
+    UFUNCTION(BlueprintCallable)
+    EStrafeDirection EvaluateActiveStrafeDirection(const float InMovementDirectionDegrees);
+    UFUNCTION(BlueprintCallable, BlueprintPure)
+    float GetAngleRelativeToActiveStrafeDirection(const float InMovementDirectionDegrees) const;
+    UFUNCTION(BlueprintCallable, BlueprintPure)
+    float GetStrafeDirectionDegrees(const EStrafeDirection InStrafeDirection) const;
+
+private:
+    void ConfigureMovementRanges();
+    FStrafeMovementRange BuildStrafeMovementRange(const float InStrafeDirectionDegrees, const float InStrafeRangeDegrees) const;
+    bool StrafeDirectionInRange(const int InStrafeDirection, const float InSignedDirectionDegrees) const;
+    bool InvalidMovementDirection(const float InMovementDirectionDegrees) const;
+    bool InNegativeRange(const FStrafeMovementRange& InMovementRange, const float InMovementDirectionDegrees) const;
+    bool InPositiveRange(const FStrafeMovementRange& InMovementRange, const float InMovementDirectionDegrees) const;
 };

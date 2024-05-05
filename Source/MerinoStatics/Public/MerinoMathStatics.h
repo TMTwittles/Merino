@@ -10,6 +10,8 @@ class MERINOSTATICS_API UMerinoMathStatics : public UObject
 	GENERATED_BODY()
 
 public:
+	static const float FULL_ROTATION_DEGREES;
+
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	static float GetUnsignedAngleBetweenTwoVectors(const FVector A, const FVector B);
 	UFUNCTION(BlueprintCallable, BlueprintPure)
@@ -20,4 +22,8 @@ public:
 	static FVector CalculateCentroid(FVector P1, FVector P2, FVector P3);
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	static float ClampFloatToValues(const float InFloat, const TArray<float>& Values);
+	static float ConvertToClockWiseRotationDegrees(const float InSignedRotationDegrees);
+	// Determines if float is within the range of 2 floats, however, no need to define which float is lower or upper bound.
+	// Only use this method when unable to determine lower and upper bounds. 
+	static bool IsFloatInArbitraryRange(const float Value, const float Bound01, const float Bound02);
 };
