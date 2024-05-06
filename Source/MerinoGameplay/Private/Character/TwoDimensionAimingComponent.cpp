@@ -8,7 +8,7 @@ UTwoDimensionAimingComponent::UTwoDimensionAimingComponent()
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
-
+	
 	// ...
 }
 
@@ -17,7 +17,6 @@ UTwoDimensionAimingComponent::UTwoDimensionAimingComponent()
 void UTwoDimensionAimingComponent::BeginPlay()
 {
 	Super::BeginPlay();
-
 	// ...
 	
 }
@@ -27,17 +26,46 @@ void UTwoDimensionAimingComponent::BeginPlay()
 void UTwoDimensionAimingComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+	AimDirection = AimRotation.Vector();
 	UMerinoDebugStatics::DrawSingleFrameDebugLine(GetWorld(), GetOwner()->GetActorLocation(), GetOwner()->GetActorLocation() + AimDirection * 2000.0f, FColor::Red);
-	// ...
+	int NumCircles = 10;
+	FVector Start = GetOwner()->GetActorLocation();
+	float StepAmount = 2000.0f / NumCircles;
+	float CurrStepAmount = StepAmount;
+	for (int i = 0; i < NumCircles; i++)
+	{
+		UMerinoDebugStatics::DrawSingleFrameDebugSphere(GetWorld(), Start + CurrStepAmount * AimDirection, 25.0f, FColor::Green);
+		CurrStepAmount += StepAmount;
+	}
 }
 
-void UTwoDimensionAimingComponent::UpdateAimDirection(FVector AimInput)
+void UTwoDimensionAimingComponent::UpdateAimDirection(const FVector& UpdatedAimDirection)
 {
-	AimDirection = AimInput;
+	AimDirection = UpdatedAimDirection;
+}
+
+void UTwoDimensionAimingComponent::SetAimRotation(const FRotator& InAimRotation)
+{
+	AimRotation = InAimRotation;
+}
+
+void UTwoDimensionAimingComponent::AddYaw(const float YawInc)
+{
+	AimRotation.Yaw += YawInc;
+}
+
+void UTwoDimensionAimingComponent::AddPitch(const float PitchInc)
+{
+	AimRotation.Pitch += PitchInc;
 }
 
 FVector UTwoDimensionAimingComponent::GetAimDirection() const
 {
 	return AimDirection;
+}
+
+FRotator UTwoDimensionAimingComponent::GetAimRotation() const
+{
+	return AimRotation;
 }
 
