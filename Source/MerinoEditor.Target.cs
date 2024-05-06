@@ -1,7 +1,6 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 using UnrealBuildTool;
-using System.Collections.Generic;
 
 public class MerinoEditorTarget : TargetRules
 {
@@ -10,6 +9,11 @@ public class MerinoEditorTarget : TargetRules
 		Type = TargetType.Editor;
 		DefaultBuildSettings = BuildSettingsVersion.V4;
 		IncludeOrderVersion = EngineIncludeOrderVersion.Unreal5_3;
-		ExtraModuleNames = new List<string>() {"Merino", "MerinoGameplay","MerinoStatics"};
+
+		// Modules
+		ExtraModuleNames.Add("Merino");
+		ExtraModuleNames.Add("MerinoGameplay");
+		ExtraModuleNames.Add("MerinoStatics");
+		ExtraModuleNames.Add("MerinoData");
 	}
 }

@@ -17,6 +17,9 @@ class MERINOGAMEPLAY_API UTwoDimensionAimingComponent : public UActorComponent
 	UPROPERTY(BlueprintReadOnly, Category = "AimInfo", meta = (AllowPrivateAccess="true"))
 	FVector AimDirection;
 
+	UPROPERTY(BlueprintReadOnly, Category = "AimInfo", meta = (AllowPrivateAccess="true"))
+	FRotator AimRotation;
+
 public:	
 	// Sets default values for this component's properties
 	UTwoDimensionAimingComponent();
@@ -28,7 +31,12 @@ protected:
 public:	
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-	void UpdateAimDirection(FVector AimInput);
+	void UpdateAimDirection(const FVector& InAimDirection);
+	void SetAimRotation(const FRotator& InAimRotation);
+	void AddYaw(const float YawInc);
+	void AddPitch(const float PitchInc);
 	UFUNCTION(BlueprintPure)
 	FVector GetAimDirection() const;
+	UFUNCTION(BlueprintPure)
+	FRotator GetAimRotation() const;
 };

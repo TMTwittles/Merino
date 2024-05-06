@@ -72,7 +72,7 @@ void UCharacterCameraOperatorComponent::SetCameraOperationMode(ECameraOperationM
 		EnterHipFireCameraMode();
 		break;
 	default:
-		UE_LOG(LogTemplateGameplayInvalidConfig, Warning, TEXT("No enter function for mode: %s"), *UEnum::GetValueAsString(ActiveMode.GetValue()));
+		UE_LOG(LogTemplateGameplayInvalidConfig, Warning, TEXT("No enter function for mode: %s"), *UEnum::GetValueAsString(ActiveMode));
 		break;
 	}
 }
@@ -102,7 +102,7 @@ void UCharacterCameraOperatorComponent::OperateCamera(float DeltaTime)
 			CalculateHipFireCameraPosition();
 			break;
 		default:
-			UE_LOG(LogTemplateGameplayInvalidConfig, Error, TEXT("Unable to operate camera with mode: %s"), *UEnum::GetValueAsString(ActiveMode.GetValue()));
+			UE_LOG(LogTemplateGameplayInvalidConfig, Error, TEXT("Unable to operate camera with mode: %s"), *UEnum::GetValueAsString(ActiveMode));
 			break;
 	}
 
@@ -144,26 +144,28 @@ void UCharacterCameraOperatorComponent::CalculateFreeLookCameraPosition()
 
 void UCharacterCameraOperatorComponent::CalculateHipFireCameraPosition()
 {
-	// TODO: This is still prototype code, neccessary optimisation will obviously be made here.
-	FVector ActorLocation = GetOwner()->GetActorLocation() + FVector(0.0f, 0.0f, HipFireCharacterZOffset);
-	FVector AimOffset = GetOwner()->GetComponentByClass<UTwoDimensionAimingComponent>()->GetAimDirection() * CharacterAimXOffset;
-	TargetLocation = ActorLocation + AimOffset;
-	// NOTICE: We never set the target rotation, this is because the player has no control over rotating the camera in aim mode thus
-	// we would use the existing target rotation from a previous mode that allowed modifying the target rotation. 
-	CameraSlerpSpeed = HipFireCameraSlerpSpeed;
-	CameraLerpSpeed = HipFireCameraLerpSpeed;
+	//// TODO: This is still prototype code, neccessary optimisation will obviously be made here.
+	//FVector ActorLocation = GetOwner()->GetActorLocation() - GetOwner()->GetActorForwardVector() * HipFireCharacterZOffset;
+	//FVector AimOffset = GetOwner()->GetComponentByClass<UTwoDimensionAimingComponent>()->GetAimDirection() * CharacterAimXOffset;
+	//TargetRotation.Yaw = GetOwner()->GetComponentByClass<UTwoDimensionAimingComponent>()->GetAimRotation().Yaw;
+	//TargetLocation = ActorLocation + AimOffset;
+	//// NOTICE: We never set the target rotation, this is because the player has no control over rotating the camera in aim mode thus
+	//// we would use the existing target rotation from a previous mode that allowed modifying the target rotation. 
+	//CameraSlerpSpeed = HipFireCameraSlerpSpeed;
+	//CameraLerpSpeed = HipFireCameraLerpSpeed;
 }
 
 void UCharacterCameraOperatorComponent::CalculateAimCameraPosition()
 {
-	// TODO: This is still prototype code, neccessary optimisation will obviously be made here.
-	FVector ActorLocation = GetOwner()->GetActorLocation() + FVector(0.0f, 0.0f, AimCharacterZOffset);
-	FVector AimOffset = GetOwner()->GetComponentByClass<UTwoDimensionAimingComponent>()->GetAimDirection() * CharacterAimXOffset;
-	TargetLocation = ActorLocation + AimOffset;
-	// NOTICE: We never set the target rotation, this is because the player has no control over rotating the camera in aim mode thus
-	// we would use the existing target rotation from a previous mode that allowed modifying the target rotation. 
-	CameraSlerpSpeed = AimCameraSlerpSpeed;
-	CameraLerpSpeed = AimCameraLerpSpeed;
+	//// TODO: This is still prototype code, neccessary optimisation will obviously be made here.
+	//FVector ActorLocation = GetOwner()->GetActorLocation() - GetOwner()->GetActorForwardVector() * AimCharacterZOffset;
+	//FVector AimOffset = GetOwner()->GetComponentByClass<UTwoDimensionAimingComponent>()->GetAimDirection() * CharacterAimXOffset;
+	//TargetRotation.Yaw = GetOwner()->GetComponentByClass<UTwoDimensionAimingComponent>()->GetAimRotation().Yaw;
+	//TargetLocation = ActorLocation + AimOffset;
+	//// NOTICE: We never set the target rotation, this is because the player has no control over rotating the camera in aim mode thus
+	//// we would use the existing target rotation from a previous mode that allowed modifying the target rotation. 
+	//CameraSlerpSpeed = AimCameraSlerpSpeed;
+	//CameraLerpSpeed = AimCameraLerpSpeed;
 }
 
 ECameraOperationMode UCharacterCameraOperatorComponent::GetActiveCameraOperationMode() const

@@ -16,6 +16,7 @@
 #include "MerinoDebugStatics.h"
 #include "MerinoMathStatics.h"
 
+
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
 //////////////////////////////////////////////////////////////////////////
@@ -78,6 +79,9 @@ void AMerinoCharacter::BeginPlay()
 
 	// Set camera opertion mode.
 	CameraOperatorComp->SetCameraOperationMode(ECameraOperationMode::FreeLook);
+
+	// Spawn weapon
+	SpawnWeapon();
 
 	//Add Input Mapping Context
 	if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
@@ -195,23 +199,15 @@ void AMerinoCharacter::Aim(const FInputActionValue& Value)
 	}
 
 	const FVector2D InputAimDirection = Value.Get<FVector2D>();
-	// By default, regardless of whether the player has input anything, the aim direction will be in front
-	// of the player. 
-	const FVector ActorForwardVector = GetActorForwardVector();
-	FVector AimDirection = ActorForwardVector;
-	if (InputAimDirection != FVector2D::Zero())
+	
+	if (Controller != nullptr)
 	{
-		// Convert input relative to controller's rotation.
-		const FRotator Rotation = CameraOperatorComp->GetCurrentCameraRotation();
-		const FRotator YawRotation(0, Rotation.Yaw, 0);
-		const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
-		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
-		AimDirection = InputAimDirection.Y * ForwardDirection + InputAimDirection.X * RightDirection;
+		AimingComp->AddYaw(InputAimDirection.X);
+		AimingComp->AddPitch(InputAimDirection.Y);
 	}
-	const FVector AimDirectionNormalized = AimDirection.GetSafeNormal();
-	AimingComp->UpdateAimDirection(AimDirectionNormalized);
-	// Update controller rotation to match aim direction. 
-	SetControlRotationToDirection(AimDirectionNormalized);
+	SetControlRotationToDirection(AimingComp->GetAimDirection());
+	//const FVector AimDirection = Controller->GetControlRotation().RotateVector(AimingComp->GetAimDirection());
+	//AimingComp->UpdateAimDirection(InpuAimDirection);
 }
 
 
@@ -220,17 +216,17 @@ void AMerinoCharacter::EnterAimingOrShooting()
 {
 	if (IsAiming())
 	{
-		CameraOperatorComp->SetCameraOperationMode(ECameraOperationMode::Aim);
+		//CameraOperatorComp->SetCameraOperationMode(ECameraOperationMode::Aim);
 	}
 	else
 	{
-		CameraOperatorComp->SetCameraOperationMode(ECameraOperationMode::HipFire);
+		//CameraOperatorComp->SetCameraOperationMode(ECameraOperationMode::HipFire);
 	}
 
 	// By default, aim forward.
 	const FVector DefaultAimDirection = GetActorForwardVector().GetSafeNormal();
-	AimingComp->UpdateAimDirection(DefaultAimDirection);
 	SetControlRotationToDirection(DefaultAimDirection);
+	AimingComp->SetAimRotation(GetControlRotation());
 
 	// When entering aim, character rotates to control rotation, not movement.
 	GetCharacterMovement()->bOrientRotationToMovement = false;
@@ -241,12 +237,12 @@ void AMerinoCharacter::ExitAimingOrShooting()
 {
 	if (IsAiming() == false && IsFiring())
 	{
-		CameraOperatorComp->SetCameraOperationMode(ECameraOperationMode::HipFire);
+		//CameraOperatorComp->SetCameraOperationMode(ECameraOperationMode::HipFire);
 		return;
 	}
 	else if (IsFiring() == false && IsAiming())
 	{
-		CameraOperatorComp->SetCameraOperationMode(ECameraOperationMode::Aim);
+		//CameraOperatorComp->SetCameraOperationMode(ECameraOperationMode::Aim);
 		return;
 	}
 
@@ -258,6 +254,29 @@ void AMerinoCharacter::ExitAimingOrShooting()
 	GetCharacterMovement()->bUseControllerDesiredRotation = false;
 }
 
+void AMerinoCharacter::SpawnWeapon()
+{
+	if (WeaponType == nullptr)
+	{
+		UE_LOG(LogTemplateCharacter, Error, TEXT("Unable to spawn weapon due to invalid weapon type."));
+		return;
+	}
+
+	if (GetMesh()->DoesSocketExist(WeaponAttachmentSocket) == false)
+	{
+		UE_LOG(LogTemplateCharacter, Error, TEXT("Unable to spawn weapon with socket name %s, unable to locate socket on the character mesh."), WeaponAttachmentSocket);
+		return;
+	}
+
+	FActorSpawnParameters WeaponSpawnParameters;
+	WeaponSpawnParameters.Owner = this; 
+	WeaponSpawnParameters.Instigator = this; 
+
+	EquipedWeapon = GetWorld()->SpawnActor<AEquipableWeapon>(WeaponType, WeaponSpawnParameters);
+	EquipedWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, WeaponAttachmentSocket);
+	EquipedWeapon->ConfigureWeaponPostAttachment();
+}
+
 bool AMerinoCharacter::IsAiming() const
 {
 	return bIsAiming == 1;
@@ -266,6 +285,11 @@ bool AMerinoCharacter::IsAiming() const
 bool AMerinoCharacter::IsFiring() const
 {
 	return bIsShooting == 1;
+}
+
+AEquipableWeapon* AMerinoCharacter::GetEquippedWeapon() const
+{
+	return EquipedWeapon;
 }
 
 void AMerinoCharacter::SetControlRotationToDirection(const FVector TargetDirection)

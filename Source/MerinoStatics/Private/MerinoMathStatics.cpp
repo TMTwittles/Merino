@@ -1,24 +1,19 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 #include "MerinoMathStatics.h"
 
-float UMerinoMathStatics::GetUnsignedAngleBetweenTwoVectors(FVector A, FVector B)
+const float UMerinoMathStatics::FULL_ROTATION_DEGREES = 360.0f;
+
+float UMerinoMathStatics::GetUnsignedAngleBetweenTwoVectors(const FVector A, const FVector B)
 {
 	return acos(FVector::DotProduct(A, B));
 }
 
-float UMerinoMathStatics::GetSignedAngleBetweenTwoVectorsRelativeToAxis(FVector A, FVector B, FVector Axis)
+float UMerinoMathStatics::GetSignedAngleBetweenTwoVectorsRelativeToAxis(const FVector A, const FVector B, const FVector Axis)
 {
 	float UnsignedAngleBetweenTwoVectors = GetUnsignedAngleBetweenTwoVectors(A, B);
 	FVector CrossProduct = FVector::CrossProduct(A, B);
 	float Dot = FVector::DotProduct(CrossProduct, Axis);
-	// Set dot multiplier to either 1.0 or -1.0 based dot product of cross product.
-	float DotMultiplier = Dot > 0.0f ? 1.0f : -1.0f;
-	float MaxAngleDegrees = 180.0f;
-	float MinAngleDegrees = -180.0f;
-	float MaxAngle = FMath::DegreesToRadians(MaxAngleDegrees);
-	float MinAngle = FMath::DegreesToRadians(MinAngleDegrees);
-	return DotMultiplier * UnsignedAngleBetweenTwoVectors;
-	return FMath::Clamp(DotMultiplier * UnsignedAngleBetweenTwoVectors, MinAngle, MaxAngle);
+	return FMath::Sign(Dot) * UnsignedAngleBetweenTwoVectors;
 }
 
 float UMerinoMathStatics::GetYawFromQuat(FQuat Quat)
@@ -42,4 +37,49 @@ FQuat UMerinoMathStatics::BuildQuatEuler(float Yaw, float Pitch, float Roll)
 FVector UMerinoMathStatics::CalculateCentroid(FVector P1, FVector P2, FVector P3)
 {
 	return (P1 + P2 + P3) / 3;
+}
+
+float UMerinoMathStatics::ClampFloatToValues(const float InFloat, const TArray<float>& Values)
+{
+	float ClampedFloat = 0.0f;
+	float Delta = 0.0f;
+	float SmallestDelta = FLT_MAX;
+	for (float ClampableValue : Values)
+	{
+		Delta = FMath::Abs(ClampableValue - InFloat);
+		if (Delta < SmallestDelta)
+		{
+			SmallestDelta = Delta;
+			ClampedFloat = ClampableValue;
+		}
+	}
+	return ClampedFloat;
+}
+
+float UMerinoMathStatics::ConvertToClockWiseRotationDegrees(const float InSignedRotationDegrees)
+{
+	float ClockWiseRotation = InSignedRotationDegrees;
+	float Sign = FMath::Sign(InSignedRotationDegrees);
+	if (Sign < 0.0f)
+	{
+		float UnsignedRotationDegrees = FMath::Abs(InSignedRotationDegrees);
+		int NumClockWiseRotations = InSignedRotationDegrees / FULL_ROTATION_DEGREES;
+		NumClockWiseRotations = NumClockWiseRotations == 0 ? 1 : NumClockWiseRotations;
+		ClockWiseRotation = InSignedRotationDegrees + NumClockWiseRotations * FULL_ROTATION_DEGREES;
+	}
+	return ClockWiseRotation;
+}
+
+bool UMerinoMathStatics::IsFloatInArbitraryRange(const float Value, const float Bound01, const float Bound02)
+{
+	bool bFloatInRange = false;
+	if (Bound01 <= Bound02)
+	{
+		bFloatInRange = FMath::IsWithinInclusive(Value, Bound01, Bound02);
+	}
+	else if (Bound01 > Bound02)
+	{
+		bFloatInRange = FMath::IsWithinInclusive(Value, Bound02, Bound01);
+	}
+	return bFloatInRange;
 }
