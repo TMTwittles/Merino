@@ -16,21 +16,21 @@ class MERINOGAMEPLAYABILITIES_API UStandardAttributeSet : public UAttributeSet
 	GENERATED_BODY()
 	
 public:
-	UPROPERTY(BlueprintReadOnly, Category="Health")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Health")
 	FGameplayAttributeData Health;
 	GAMEPLAYATTRIBUTE_VALUE_GETTER(Health);
 	GAMEPLAYATTRIBUTE_VALUE_SETTER(Health);
 	GAMEPLAYATTRIBUTE_VALUE_INITTER(Health);
 	GAMEPLAYATTRIBUTE_PROPERTY_GETTER(UStandardAttributeSet, Health);
 
-	UPROPERTY(BlueprintReadOnly, Category = "Health")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Health")
 	FGameplayAttributeData MaxHealth;
 	GAMEPLAYATTRIBUTE_VALUE_GETTER(MaxHealth);
 	GAMEPLAYATTRIBUTE_VALUE_SETTER(MaxHealth);
 	GAMEPLAYATTRIBUTE_VALUE_INITTER(MaxHealth);
 	GAMEPLAYATTRIBUTE_PROPERTY_GETTER(UStandardAttributeSet, MaxHealth);
 
-	UPROPERTY(BlueprintReadOnly, Category = "Damage")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Damage")
 	FGameplayAttributeData Damage;
 	GAMEPLAYATTRIBUTE_VALUE_GETTER(Damage);
 	GAMEPLAYATTRIBUTE_VALUE_SETTER(Damage);

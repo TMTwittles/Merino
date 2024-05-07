@@ -6,8 +6,12 @@
 #include "GameFramework/Character.h"
 #include "Logging/LogMacros.h"
 #include "EquipableWeapon.h"
+#include "AbilitySystemInterface.h"
 #include "MerinoCharacter.generated.h"
 
+class UAbilitySystemComponent;
+class UGameplayAbility;
+class UStandardAttributeSet;
 class UCharacterCameraOperatorComponent;
 class USpringArmComponent;
 class UCameraComponent;
@@ -19,9 +23,18 @@ class UTwoDimensionAimingComponent;
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
 UCLASS(config=Game)
-class AMerinoCharacter : public ACharacter
+class AMerinoCharacter : public ACharacter, public IAbilitySystemInterface
 {
 	GENERATED_BODY()
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadonly, Category = GameplayAbilitySystem, meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UAbilitySystemComponent> AbilitySystem;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadonly, Category = GameplayAbilitySystem, meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UStandardAttributeSet> AttributeSet;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = GameplayAbilitySystem, meta = (AllowPrivateAccess = "true"))
+	TArray<TSubclassOf<UGameplayAbility>> GameplayAbilities;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = CameraComponents, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UCharacterCameraOperatorComponent> CameraOperatorComp;
@@ -85,6 +98,8 @@ class AMerinoCharacter : public ACharacter
 public:
 	AMerinoCharacter();
 
+	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
+
 protected:
 	// To add mapping context
 	virtual void BeginPlay();
@@ -99,6 +114,8 @@ protected:
 	void Look(const FInputActionValue& Value);
 
 private:
+	void GrantAbilities();
+
 	/** Called when aim input started */
 	void EnterAim(const FInputActionValue& Value);
 

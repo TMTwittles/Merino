@@ -15,7 +15,8 @@
 #include "Math/UnrealMathUtility.h"
 #include "MerinoDebugStatics.h"
 #include "MerinoMathStatics.h"
-
+#include "AbilitySystemComponent.h"
+#include "StandardAttributeSet.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -49,6 +50,9 @@ AMerinoCharacter::AMerinoCharacter()
 	GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
 	GetCharacterMovement()->BrakingDecelerationFalling = 1500.0f;
 
+	AbilitySystem = CreateDefaultSubobject<UAbilitySystemComponent>(TEXT("AbilitySystem"));
+	AttributeSet = CreateDefaultSubobject<UStandardAttributeSet>(TEXT("StandardAttributeSet"));
+
 	// Create a CharacterCameraOperator, this operates the camera dynamically.
 	// Starting mode is free look. 
 	CameraOperatorComp = CreateDefaultSubobject<UCharacterCameraOperatorComponent>(TEXT("CameraOperator"));
@@ -72,10 +76,18 @@ AMerinoCharacter::AMerinoCharacter()
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
 }
 
+UAbilitySystemComponent* AMerinoCharacter::GetAbilitySystemComponent() const
+{
+	return AbilitySystem;
+}
+
 void AMerinoCharacter::BeginPlay()
 {
 	// Call the base class  
 	Super::BeginPlay();
+
+	// Grant abilities to the character.
+	GrantAbilities();
 
 	// Set camera opertion mode.
 	CameraOperatorComp->SetCameraOperationMode(ECameraOperationMode::FreeLook);
@@ -165,6 +177,19 @@ void AMerinoCharacter::Look(const FInputActionValue& Value)
 	}
 }
 
+void AMerinoCharacter::GrantAbilities()
+{
+	for (TSubclassOf<UGameplayAbility> Ability : GameplayAbilities)
+	{
+		FGameplayAbilitySpec AbilitySpec(
+			Ability,
+			0,
+			0
+		);
+		AbilitySystem->GiveAbility(AbilitySpec);
+	}
+}
+
 void AMerinoCharacter::EnterAim(const FInputActionValue& Value)
 {
 	bIsAiming = 1;
@@ -180,6 +205,7 @@ void AMerinoCharacter::ExitAim(const FInputActionValue& Value)
 void AMerinoCharacter::StartShooting(const FInputActionValue& Value)
 {
 	bIsShooting = 1;
+	AbilitySystem->AbilityLocalInputPressed(0);
 	EnterAimingOrShooting();
 }
 
