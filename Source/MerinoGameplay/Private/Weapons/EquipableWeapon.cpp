@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "EquipableWeapon.h"
+#include "Weapons/EquipableWeapon.h"
 
 // Sets default values
 AEquipableWeapon::AEquipableWeapon()

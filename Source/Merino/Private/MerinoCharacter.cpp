@@ -11,11 +11,12 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
 #include "MerinoGameplay/Public/Camera/CharacterCameraOperatorComponent.h"
-#include "MerinoGameplay/Public/Character/TwoDimensionAimingComponent.h"
+#include "MerinoGameplay/Public/Character/CharacterAimingComponent.h"
 #include "Math/UnrealMathUtility.h"
 #include "MerinoDebugStatics.h"
 #include "MerinoMathStatics.h"
-
+#include "AbilitySystemComponent.h"
+#include "StandardAttributeSet.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -49,6 +50,9 @@ AMerinoCharacter::AMerinoCharacter()
 	GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
 	GetCharacterMovement()->BrakingDecelerationFalling = 1500.0f;
 
+	AbilitySystem = CreateDefaultSubobject<UAbilitySystemComponent>(TEXT("AbilitySystem"));
+	AttributeSet = CreateDefaultSubobject<UStandardAttributeSet>(TEXT("StandardAttributeSet"));
+
 	// Create a CharacterCameraOperator, this operates the camera dynamically.
 	// Starting mode is free look. 
 	CameraOperatorComp = CreateDefaultSubobject<UCharacterCameraOperatorComponent>(TEXT("CameraOperator"));
@@ -66,16 +70,24 @@ AMerinoCharacter::AMerinoCharacter()
 
 	// By default character is not aiming. 
 	bIsAiming = 0;
-	AimingComp = CreateDefaultSubobject<UTwoDimensionAimingComponent>(TEXT("2D Aiming"));
+	CharacterAimingComp = CreateDefaultSubobject<UCharacterAimingComponent>(TEXT("CharacterAiming"));
 
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
+}
+
+UAbilitySystemComponent* AMerinoCharacter::GetAbilitySystemComponent() const
+{
+	return AbilitySystem;
 }
 
 void AMerinoCharacter::BeginPlay()
 {
 	// Call the base class  
 	Super::BeginPlay();
+
+	// Grant abilities to the character.
+	GrantAbilities();
 
 	// Set camera opertion mode.
 	CameraOperatorComp->SetCameraOperationMode(ECameraOperationMode::FreeLook);
@@ -111,15 +123,12 @@ void AMerinoCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AMerinoCharacter::Look);
 
 		// Start and exit aiming
-		EnhancedInputComponent->BindAction(StartAimingAction, ETriggerEvent::Started, this, &AMerinoCharacter::EnterAim);
-		EnhancedInputComponent->BindAction(StartAimingAction, ETriggerEvent::Completed, this, &AMerinoCharacter::ExitAim);
+		EnhancedInputComponent->BindAction(AimingAction, ETriggerEvent::Started, this, &AMerinoCharacter::EnterAim);
+		EnhancedInputComponent->BindAction(AimingAction, ETriggerEvent::Completed, this, &AMerinoCharacter::ExitAim);
 
 		// Start and stop shooting.
 		EnhancedInputComponent->BindAction(ShootingAction, ETriggerEvent::Started, this, &AMerinoCharacter::StartShooting);
 		EnhancedInputComponent->BindAction(ShootingAction, ETriggerEvent::Completed, this, &AMerinoCharacter::ExitShooting);
-
-		// Aiming
-		EnhancedInputComponent->BindAction(AimingAction, ETriggerEvent::Triggered, this, &AMerinoCharacter::Aim);
 	}
 	else
 	{
@@ -149,19 +158,29 @@ void AMerinoCharacter::Move(const FInputActionValue& Value)
 
 void AMerinoCharacter::Look(const FInputActionValue& Value)
 {
-	if (IsAiming() || IsFiring())
-	{
-		return;
-	}
-
 	// Input is a Vector2D
 	FVector2D LookAxisVector = Value.Get<FVector2D>();
 
 	if (Controller != nullptr)
 	{
 		// add yaw and pitch input to controller
-		AddControllerYawInput(LookAxisVector.X);
-		AddControllerPitchInput(LookAxisVector.Y);
+		//AddControllerYawInput(LookAxisVector.X);
+		//AddControllerPitchInput(LookAxisVector.Y);
+		CameraOperatorComp->AddYaw(LookAxisVector.X);
+		CameraOperatorComp->AddPitch(LookAxisVector.Y);
+	}
+}
+
+void AMerinoCharacter::GrantAbilities()
+{
+	for (TSubclassOf<UGameplayAbility> Ability : GameplayAbilities)
+	{
+		FGameplayAbilitySpec AbilitySpec(
+			Ability,
+			0,
+			0
+		);
+		AbilitySystem->GiveAbility(AbilitySpec);
 	}
 }
 
@@ -180,6 +199,8 @@ void AMerinoCharacter::ExitAim(const FInputActionValue& Value)
 void AMerinoCharacter::StartShooting(const FInputActionValue& Value)
 {
 	bIsShooting = 1;
+	CharacterAimingComp->RefreshCharacterAiming();
+	AbilitySystem->AbilityLocalInputPressed(0);
 	EnterAimingOrShooting();
 }
 
@@ -193,65 +214,17 @@ void AMerinoCharacter::ExitShooting(const FInputActionValue& Value)
 // into a state machine will make this less edge casey and confusing. 
 void AMerinoCharacter::Aim(const FInputActionValue& Value)
 {
-	if (IsFiring() == false && IsAiming() == false)
-	{
-		return;
-	}
-
-	const FVector2D InputAimDirection = Value.Get<FVector2D>();
-	
-	if (Controller != nullptr)
-	{
-		AimingComp->AddYaw(InputAimDirection.X);
-		AimingComp->AddPitch(InputAimDirection.Y);
-	}
-	SetControlRotationToDirection(AimingComp->GetAimDirection());
-	//const FVector AimDirection = Controller->GetControlRotation().RotateVector(AimingComp->GetAimDirection());
-	//AimingComp->UpdateAimDirection(InpuAimDirection);
+	// TODO: Implement
 }
-
-
 
 void AMerinoCharacter::EnterAimingOrShooting()
 {
-	if (IsAiming())
-	{
-		//CameraOperatorComp->SetCameraOperationMode(ECameraOperationMode::Aim);
-	}
-	else
-	{
-		//CameraOperatorComp->SetCameraOperationMode(ECameraOperationMode::HipFire);
-	}
-
-	// By default, aim forward.
-	const FVector DefaultAimDirection = GetActorForwardVector().GetSafeNormal();
-	SetControlRotationToDirection(DefaultAimDirection);
-	AimingComp->SetAimRotation(GetControlRotation());
-
-	// When entering aim, character rotates to control rotation, not movement.
-	GetCharacterMovement()->bOrientRotationToMovement = false;
-	GetCharacterMovement()->bUseControllerDesiredRotation = true;
+	// TODO: Implement	
 }
 
 void AMerinoCharacter::ExitAimingOrShooting()
 {
-	if (IsAiming() == false && IsFiring())
-	{
-		//CameraOperatorComp->SetCameraOperationMode(ECameraOperationMode::HipFire);
-		return;
-	}
-	else if (IsFiring() == false && IsAiming())
-	{
-		//CameraOperatorComp->SetCameraOperationMode(ECameraOperationMode::Aim);
-		return;
-	}
-
-	CameraOperatorComp->SetCameraOperationMode(ECameraOperationMode::FreeLook);
-
-	Controller->SetControlRotation(CameraOperatorComp->GetCurrentCameraRotation());
-
-	GetCharacterMovement()->bOrientRotationToMovement = true;
-	GetCharacterMovement()->bUseControllerDesiredRotation = false;
+	// TODO: Implement
 }
 
 void AMerinoCharacter::SpawnWeapon()
@@ -290,20 +263,4 @@ bool AMerinoCharacter::IsFiring() const
 AEquipableWeapon* AMerinoCharacter::GetEquippedWeapon() const
 {
 	return EquipedWeapon;
-}
-
-void AMerinoCharacter::SetControlRotationToDirection(const FVector TargetDirection)
-{
-	if (Controller == nullptr)
-	{
-		UE_LOG(LogTemplateCharacter, Error, TEXT("'%s' Failed to update control rotation due to no controller."), *GetNameSafe(this));
-		return;
-	}
-	const FRotator ControlRotation = Controller->GetControlRotation();
-	const FVector UpDirection = FRotationMatrix(ControlRotation).GetUnitAxis(EAxis::Z);
-	const float YawRotationAmount = UMerinoMathStatics::GetSignedAngleBetweenTwoVectorsRelativeToAxis(
-		FVector::ForwardVector.GetSafeNormal(),
-		TargetDirection,
-		UpDirection);
-	Controller->SetControlRotation(FRotator(0.0f, FMath::RadiansToDegrees(YawRotationAmount), 0.0f));
 }

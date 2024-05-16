@@ -11,10 +11,11 @@
 * the weapon.
 */
 UCLASS(BlueprintType, Blueprintable, Abstract)
-class MERINO_API AEquipableWeapon : public AActor
+class MERINOGAMEPLAY_API AEquipableWeapon : public AActor
 {
 	GENERATED_BODY()
 	
+protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = WeaponAttachPoint, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<USceneComponent> WeaponAttachPoint;
 

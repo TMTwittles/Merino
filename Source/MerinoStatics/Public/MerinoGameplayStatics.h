@@ -15,6 +15,7 @@ class MERINOSTATICS_API UMerinoGameplayStatics : public UObject
 	GENERATED_BODY()
 
 public:
+	static void SetControlRotationToDirection(AController* Controller, const FVector& Direction);
 	bool CheckActorGrounded(UWorld* World, AActor* Actor);
 	static float CalculateDecelerationTime(FVector* PrevVelocity, FVector* CurrentVelocity, float Deceleration);
 };

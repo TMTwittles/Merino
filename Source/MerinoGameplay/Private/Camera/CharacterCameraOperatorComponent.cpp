@@ -2,7 +2,7 @@
 #include "Camera/CharacterCameraOperatorComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "Character/TwoDimensionAimingComponent.h"
+#include "Character/CharacterAimingComponent.h"
 #include "MerinoGameplay.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "GameFramework/Controller.h"
@@ -77,6 +77,16 @@ void UCharacterCameraOperatorComponent::SetCameraOperationMode(ECameraOperationM
 	}
 }
 
+void UCharacterCameraOperatorComponent::AddYaw(float YawInc)
+{
+	FreeLookCameraRotation.Yaw += YawInc;
+}
+
+void UCharacterCameraOperatorComponent::AddPitch(float PitchInc)
+{
+	FreeLookCameraRotation.Pitch += PitchInc;
+}
+
 void UCharacterCameraOperatorComponent::OperateCamera(float DeltaTime)
 {
 	if (CameraSpringArm == nullptr)
@@ -133,10 +143,7 @@ void UCharacterCameraOperatorComponent::CalculateFreeLookCameraPosition()
 	// TODO: This is still prototype code, neccessary optimisation will obviously be made here.
 	FVector ActorLocation = GetOwner()->GetActorLocation() + FVector(0.0f, 0.0f, FreeLookCharacterZOffset);
 	FVector CharacterVelocity = GetOwner()->GetComponentByClass<UCharacterMovementComponent>()->Velocity;
-	if (Controller != nullptr)
-	{
-		TargetRotation = Controller->GetControlRotation();
-	}
+	TargetRotation = FreeLookCameraRotation;
 	TargetLocation = ActorLocation + CharacterVelocity.GetSafeNormal() * CharacterVelocityXOffset;
 	CameraSlerpSpeed = FreeLookCameraSlerpSpeed;
 	CameraLerpSpeed = FreeLookCameraLerpSpeed;

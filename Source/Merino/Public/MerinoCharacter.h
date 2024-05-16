@@ -5,23 +5,36 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Logging/LogMacros.h"
-#include "EquipableWeapon.h"
+#include "Weapons/EquipableWeapon.h"
+#include "AbilitySystemInterface.h"
 #include "MerinoCharacter.generated.h"
 
+class UAbilitySystemComponent;
+class UGameplayAbility;
+class UStandardAttributeSet;
 class UCharacterCameraOperatorComponent;
 class USpringArmComponent;
 class UCameraComponent;
 class UInputMappingContext;
 class UInputAction;
 struct FInputActionValue;
-class UTwoDimensionAimingComponent;
+class UCharacterAimingComponent;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
 UCLASS(config=Game)
-class AMerinoCharacter : public ACharacter
+class AMerinoCharacter : public ACharacter, public IAbilitySystemInterface
 {
 	GENERATED_BODY()
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadonly, Category = GameplayAbilitySystem, meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UAbilitySystemComponent> AbilitySystem;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadonly, Category = GameplayAbilitySystem, meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UStandardAttributeSet> AttributeSet;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = GameplayAbilitySystem, meta = (AllowPrivateAccess = "true"))
+	TArray<TSubclassOf<UGameplayAbility>> GameplayAbilities;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = CameraComponents, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UCharacterCameraOperatorComponent> CameraOperatorComp;
@@ -49,13 +62,6 @@ class AMerinoCharacter : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UInputAction> LookAction;
 
-
-	// TODO: Need to rename Aiming action to something more appropriate like ADS, if we arent aiming but we are shooting
-	// then we are hip firing etc. Rename this to make things less confusing. 
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<UInputAction> StartAimingAction;
-	
 	UPROPERTY(EditAnywhere, BlueprintReadonly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UInputAction> AimingAction;
 
@@ -70,8 +76,8 @@ class AMerinoCharacter : public ACharacter
 	UPROPERTY(BlueprintReadOnly, Category = Aiming, meta = (AllowPrivateAccess = "true"))
 	uint8 bIsAiming;
 
-	UPROPERTY(BlueprintReadOnly, Category = Aiming, meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<UTwoDimensionAimingComponent> AimingComp;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Aiming, meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UCharacterAimingComponent> CharacterAimingComp;
 
 	UPROPERTY(BlueprintReadOnly, Category= WeaponSettings, meta = (AllowPrivateAccess= "true"))
 	TObjectPtr<AEquipableWeapon> EquipedWeapon;
@@ -84,6 +90,8 @@ class AMerinoCharacter : public ACharacter
 	
 public:
 	AMerinoCharacter();
+
+	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 
 protected:
 	// To add mapping context
@@ -99,6 +107,8 @@ protected:
 	void Look(const FInputActionValue& Value);
 
 private:
+	void GrantAbilities();
+
 	/** Called when aim input started */
 	void EnterAim(const FInputActionValue& Value);
 
@@ -139,7 +149,5 @@ public:
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
-
-	void SetControlRotationToDirection(const FVector TargetDirection);
 };
 
