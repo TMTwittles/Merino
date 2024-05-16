@@ -9,10 +9,10 @@ public class MerinoTarget : TargetRules
 	{
 		Type = TargetType.Game;
 		DefaultBuildSettings = BuildSettingsVersion.V4;
-		IncludeOrderVersion = EngineIncludeOrderVersion.Unreal5_3;
+		IncludeOrderVersion = EngineIncludeOrderVersion.Latest;
 
-		// Modules
-		ExtraModuleNames.Add("Merino");
+        // Modules
+        ExtraModuleNames.Add("Merino");
 		ExtraModuleNames.Add("MerinoGameplay");
 		ExtraModuleNames.Add("MerinoStatics");
 		ExtraModuleNames.Add("MerinoData");

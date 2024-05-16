@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Logging/LogMacros.h"
-#include "EquipableWeapon.h"
+#include "Weapons/EquipableWeapon.h"
 #include "AbilitySystemInterface.h"
 #include "MerinoCharacter.generated.h"
 
@@ -18,7 +18,7 @@ class UCameraComponent;
 class UInputMappingContext;
 class UInputAction;
 struct FInputActionValue;
-class UTwoDimensionAimingComponent;
+class UCharacterAimingComponent;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
@@ -62,13 +62,6 @@ class AMerinoCharacter : public ACharacter, public IAbilitySystemInterface
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UInputAction> LookAction;
 
-
-	// TODO: Need to rename Aiming action to something more appropriate like ADS, if we arent aiming but we are shooting
-	// then we are hip firing etc. Rename this to make things less confusing. 
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<UInputAction> StartAimingAction;
-	
 	UPROPERTY(EditAnywhere, BlueprintReadonly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UInputAction> AimingAction;
 
@@ -83,8 +76,8 @@ class AMerinoCharacter : public ACharacter, public IAbilitySystemInterface
 	UPROPERTY(BlueprintReadOnly, Category = Aiming, meta = (AllowPrivateAccess = "true"))
 	uint8 bIsAiming;
 
-	UPROPERTY(BlueprintReadOnly, Category = Aiming, meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<UTwoDimensionAimingComponent> AimingComp;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Aiming, meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UCharacterAimingComponent> CharacterAimingComp;
 
 	UPROPERTY(BlueprintReadOnly, Category= WeaponSettings, meta = (AllowPrivateAccess= "true"))
 	TObjectPtr<AEquipableWeapon> EquipedWeapon;
@@ -156,7 +149,5 @@ public:
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
-
-	void SetControlRotationToDirection(const FVector TargetDirection);
 };
 

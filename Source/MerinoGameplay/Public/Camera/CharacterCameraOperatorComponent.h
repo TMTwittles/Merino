@@ -69,6 +69,11 @@ class MERINOGAMEPLAY_API UCharacterCameraOperatorComponent : public UActorCompon
 	ECameraOperationMode ActiveMode;
 	UPROPERTY(BlueprintReadOnly, Category=OperatorConfig, meta=(AllowPrivateAccess="true"))
 	TObjectPtr<USpringArmComponent> CameraSpringArm;
+
+	// Rotator for free look, this is player controller and independant to control rotation.
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	FRotator FreeLookCameraRotation;
+
 	// Reference the PlayerController to access the control rotation.
 	UPROPERTY(BlueprintReadOnly, Category=OperatorConfig, meta=(AllowPrivateAccess="true"))
 	TObjectPtr<AController> Controller;
@@ -85,6 +90,8 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 	void SetCameraOperationMode(ECameraOperationMode InCameraOperationMode);
+	void AddYaw(float YawInc);
+	void AddPitch(float PitchInc);
 private:
 	// Operates the camera, should be called every frame. 
 	void OperateCamera(float DeltaTime);
