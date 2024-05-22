@@ -63,6 +63,15 @@ private:
 
 public:
 
+	/*
+	* Calculates the rotation offset in degrees from the input direction to the current aim direction.
+	*/
 	UFUNCTION(BlueprintCallable, BlueprintPure)
-	FVector GetAimDirection() const;
+	float CalculateRotationOffsetFromDirection(const FVector& InDirection, const FVector& ReferenceAxis) const;
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	FORCEINLINE FVector GetAimDirection() const { return AimDirection; }
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	FORCEINLINE bool IsAiming() const { return bIsAiming; }
 };

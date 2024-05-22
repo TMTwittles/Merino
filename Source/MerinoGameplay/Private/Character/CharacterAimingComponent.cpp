@@ -2,6 +2,7 @@
 #include "Character/CharacterAimingComponent.h"
 #include "MerinoDebugStatics.h"
 #include "MerinoGameplayStatics.h"
+#include "MerinoMathStatics.h"
 #include "MerinoGameplay.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -15,6 +16,7 @@ UCharacterAimingComponent::UCharacterAimingComponent()
 	PrimaryComponentTick.bCanEverTick = true;
 	// ...
 	AimTarget == nullptr;
+	ElapsedAimDurationSeconds = 0.0f;
 }
 
 // Called when the game starts
@@ -37,6 +39,7 @@ void UCharacterAimingComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 
 	if (bIsAiming && Character != nullptr)
 	{
+		UMerinoDebugStatics::DrawSingleFrameDebugLine(GetWorld(), GetOwner()->GetActorLocation(), GetOwner()->GetActorLocation() + GetOwner()->GetActorForwardVector().GetSafeNormal() * 1000.0f, FColor::Red);
 		TickCharacterAiming(DeltaTime);
 	}
 }
@@ -52,11 +55,6 @@ void UCharacterAimingComponent::TickCharacterAiming(float DeltaTime)
 	ElapsedAimDurationSeconds -= DeltaTime;
 	UpdateAimDirection();
 	UMerinoGameplayStatics::SetControlRotationToDirection(Character->GetController(), AimDirection);
-}
-
-FVector UCharacterAimingComponent::GetAimDirection() const
-{
-	return AimDirection;
 }
 
 void UCharacterAimingComponent::RefreshCharacterAiming()
@@ -112,5 +110,12 @@ void UCharacterAimingComponent::ExitCharacterAiming()
 	ElapsedAimDurationSeconds = 0.0f;
 	Character->GetCharacterMovement()->bOrientRotationToMovement = true;
 	Character->GetCharacterMovement()->bUseControllerDesiredRotation = false;
+}
+
+float UCharacterAimingComponent::CalculateRotationOffsetFromDirection(const FVector& InDirection, const FVector& ReferenceAxis) const
+{
+	float offset = UMerinoMathStatics::GetSignedAngleBetweenTwoVectorsRelativeToAxis(InDirection, AimDirection, ReferenceAxis);
+	FVector StartLocation = GetOwner()->GetActorLocation() + GetOwner()->GetActorForwardVector().GetSafeNormal() * 100;
+	return FMath::RadiansToDegrees(offset);
 }
 
