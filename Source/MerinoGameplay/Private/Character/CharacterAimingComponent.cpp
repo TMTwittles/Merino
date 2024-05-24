@@ -39,7 +39,7 @@ void UCharacterAimingComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 
 	if (bIsAiming && Character != nullptr)
 	{
-		UMerinoDebugStatics::DrawSingleFrameDebugLine(GetWorld(), GetOwner()->GetActorLocation(), GetOwner()->GetActorLocation() + GetOwner()->GetActorForwardVector().GetSafeNormal() * 1000.0f, FColor::Red);
+		UMerinoDebugStatics::DrawSingleFrameDebugLine(GetWorld(), GetOwner()->GetActorLocation(), GetOwner()->GetActorLocation() + AimDirection * 1000.0f, FColor::Red);
 		TickCharacterAiming(DeltaTime);
 	}
 }
@@ -116,6 +116,20 @@ float UCharacterAimingComponent::CalculateRotationOffsetFromDirection(const FVec
 {
 	float offset = UMerinoMathStatics::GetSignedAngleBetweenTwoVectorsRelativeToAxis(InDirection, AimDirection, ReferenceAxis);
 	FVector StartLocation = GetOwner()->GetActorLocation() + GetOwner()->GetActorForwardVector().GetSafeNormal() * 100;
+	UMerinoDebugStatics::DrawSingleFrameDebugLine(GetWorld(), StartLocation, StartLocation + AimDirection * 1000.0f, FColor::Red);
+	UMerinoDebugStatics::DrawSingleFrameDebugLine(GetWorld(), StartLocation, StartLocation + InDirection * 1000.0f, FColor::Green);
 	return FMath::RadiansToDegrees(offset);
+}
+
+float UCharacterAimingComponent::CalculatePitchRotationOffsetDegrees() const
+{
+	float pitchOffset =  UMerinoMathStatics::GetSignedAngleBetweenTwoVectorsRelativeToAxis(AimDirection, GetOwner()->GetActorForwardVector().GetSafeNormal(), GetOwner()->GetActorUpVector());
+	return FMath::RadiansToDegrees(pitchOffset);
+}
+
+float UCharacterAimingComponent::CalculateYawRotationOffsetDegrees() const
+{
+	float yawOffset = UMerinoMathStatics::GetSignedAngleBetweenTwoVectorsRelativeToAxis(AimDirection, GetOwner()->GetActorForwardVector().GetSafeNormal(), GetOwner()->GetActorRightVector());
+	return FMath::RadiansToDegrees(yawOffset);
 }
 
