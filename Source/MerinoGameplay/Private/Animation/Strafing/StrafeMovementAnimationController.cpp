@@ -14,53 +14,58 @@ static const float DEGREES_NEG_LIMIT = -180.0f;
 
 UStrafeMovementAnimationController::UStrafeMovementAnimationController()
 {
-	ActiveStrafeDirection = (int) EStrafeDirection::FORWARD;
-	ConfigureMovementRanges();
+	ActiveStrafeDirection = EStrafeDirection::NONE;
 }
 
 EStrafeDirection UStrafeMovementAnimationController::EvaluateActiveStrafeDirection(const float InSignedDirectionDegrees)
 {
-	if (InvalidMovementDirection(InSignedDirectionDegrees)) return EStrafeDirection::FORWARD;
-
+	if (InvalidMovementDirection(InSignedDirectionDegrees) || ActiveStrafeDirection == EStrafeDirection::NONE) return EStrafeDirection::NONE;
 	bool bChangeStrafeDirection = StrafeDirectionInRange(ActiveStrafeDirection, InSignedDirectionDegrees) == false;
-	for (int directionIndex = 0; directionIndex < NUM_STRAFE_DIRECTIONS; directionIndex++)
+
+	if (bChangeStrafeDirection)
 	{
-		if (bChangeStrafeDirection && 
-			StrafeDirectionInRange(directionIndex, InSignedDirectionDegrees))
+		TArray<EStrafeDirection> Keys;
+		MovementRangesMap.GetKeys(Keys);
+		for (EStrafeDirection Direction : Keys)
 		{
-			ActiveStrafeDirection = directionIndex;
-			UE_LOG(LogTemp, Log, TEXT("Changed strafe direction %s to %f"), 
-				*UEnum::GetValueAsString((EStrafeDirection)ActiveStrafeDirection), 
-				MovementRanges[ActiveStrafeDirection].StrafeDirectionDegrees);
-			bChangeStrafeDirection = false;
+			if (bChangeStrafeDirection &&
+				StrafeDirectionInRange(Direction, InSignedDirectionDegrees))
+			{
+				ActiveStrafeDirection = Direction;
+				UE_LOG(LogTemp, Log, TEXT("Changed strafe direction %s to %f"), *UEnum::GetValueAsString(ActiveStrafeDirection), MovementRangesMap[ActiveStrafeDirection].StrafeDirectionDegrees);
+				bChangeStrafeDirection = false;
+			}
 		}
 	}
-	return (EStrafeDirection) ActiveStrafeDirection;
+
+	if (bChangeStrafeDirection)
+	{
+		UE_LOG(LogTemplateGameplayInvalidConfig, Error, TEXT("No movement range for %f"), InSignedDirectionDegrees);
+	}
+
+	return ActiveStrafeDirection;
 }
 
 float UStrafeMovementAnimationController::GetAngleRelativeToActiveStrafeDirection(const float InMovementDirectionDegrees) const
 {
-	if (InvalidMovementDirection(InMovementDirectionDegrees)) return -1.0f;
-	
-	float AngleRelativeToActiveStrafeDirection = -1.0f;
-	const FStrafeMovementRange MovementRange = MovementRanges[ActiveStrafeDirection];
+	return GetAngleRelativeToStrafeDirection(ActiveStrafeDirection, InMovementDirectionDegrees);
+}
 
-	// Calculate difference, use strafe direction in range -180.0f to 180.0f to determine difference. 
-	const float StrafeDirectionUnwind = MovementRange.StrafeDirectionDegreesUnwind;
-	const float ReferenceAngleDegrees = FMath::Abs(StrafeDirectionUnwind);
-	const float InputAngleDegrees = FMath::Abs(InMovementDirectionDegrees);
-	const float Difference = FMath::Abs(StrafeDirectionUnwind - InputAngleDegrees);
-
-	// Calculate direction, i.e veering negative or positive degrees. 
-	const float DirectionModifier = InMovementDirectionDegrees < StrafeDirectionUnwind ? -1.0f : 1.0f;
-
-	AngleRelativeToActiveStrafeDirection = Difference * DirectionModifier;
-	if (Difference != 0.0f)
+float UStrafeMovementAnimationController::GetAngleRelativeToStrafeDirection(const EStrafeDirection InStrafeDirection, float InMovementDirectionDegrees) const
+{
+	if (MovementRangesMap.Contains(InStrafeDirection) == false)
 	{
-		UE_LOG(LogTemp, Log, TEXT("Difference %f"), AngleRelativeToActiveStrafeDirection);
+		UE_LOG(LogTemplateGameplayInvalidConfig, Error, TEXT("No entry for strafe direction %s exists."), *UEnum::GetValueAsString(InStrafeDirection));
+		return -1.0f;
 	}
-	
-	return AngleRelativeToActiveStrafeDirection;
+
+	const FStrafeMovementRange MovementRange = MovementRangesMap[InStrafeDirection];
+	if (MovementRange.StrafeDirectionDegrees == 0 || InMovementDirectionDegrees == 0)
+	{
+		// If the strafe direction degrees is 0, InMovementDirectionDegrees would already be relative in range 90,-90 degrees.
+		return InMovementDirectionDegrees;
+	}
+	return MovementRange.StrafeDirectionDegrees - UMerinoMathStatics::ConvertToClockWiseRotationDegrees(InMovementDirectionDegrees);
 }
 
 float UStrafeMovementAnimationController::GetStrafeDirectionDegrees(const EStrafeDirection InStrafeDirection) const
@@ -70,7 +75,7 @@ float UStrafeMovementAnimationController::GetStrafeDirectionDegrees(const EStraf
 
 void UStrafeMovementAnimationController::ConfigureMovementRanges()
 {
-	MovementRanges.SetNum(NUM_STRAFE_DIRECTIONS);
+	/*MovementRanges.SetNum(NUM_STRAFE_DIRECTIONS);
 	
 	float DirectionDegrees = FORWARD_STRAFE_DIRECTION_DEGREES;
 	for (int i = 0; i < NUM_STRAFE_DIRECTIONS; i++)
@@ -78,35 +83,46 @@ void UStrafeMovementAnimationController::ConfigureMovementRanges()
 		MovementRanges[i] = BuildStrafeMovementRange(DirectionDegrees, STRAFE_RANGE_DEGREES);
 		UE_LOG(LogTemp, Log, TEXT("Constructed range %s, direction = %f, range = %f"), *UEnum::GetValueAsString((EStrafeDirection)i), DirectionDegrees, STRAFE_RANGE_DEGREES);
 		DirectionDegrees += STRAFE_RANGE_DEGREES * 2;
+	}*/
+}
+
+void UStrafeMovementAnimationController::SetMovementRange(const EStrafeDirection InStrafeDirection, const float InDirectionDegrees, const float InRangeDegreesLeft, const float InRangeDegreesRight)
+{
+	if (MovementRangesMap.Contains(InStrafeDirection))
+	{
+		UE_LOG(LogTemplateGameplayInvalidConfig, Error, TEXT("Movement range for strafe direction %s already exists."), *UEnum::GetValueAsString(InStrafeDirection));
+		return;
+	}
+	MovementRangesMap.Add(InStrafeDirection, BuildStrafeMovementRange(InDirectionDegrees, InRangeDegreesLeft, InRangeDegreesRight));
+
+	if (ActiveStrafeDirection == EStrafeDirection::NONE)
+	{
+		ActiveStrafeDirection = InStrafeDirection;
 	}
 }
 
-FStrafeMovementRange UStrafeMovementAnimationController::BuildStrafeMovementRange(const float InStrafeDirectionDegrees, const float InStrafeRangeDegrees) const
+FStrafeMovementRange UStrafeMovementAnimationController::BuildStrafeMovementRange(const float InStrafeDirectionDegrees, const float InRangeDegreesLeft, const float InRangeDegreesRight) const
 {
 	FStrafeMovementRange ConstructedRange;
 	ConstructedRange.StrafeDirectionDegrees = InStrafeDirectionDegrees;
 	ConstructedRange.StrafeDirectionDegreesUnwind = FMath::UnwindDegrees(InStrafeDirectionDegrees);
-	ConstructedRange.StrafeRangeDegrees = InStrafeRangeDegrees;
+	ConstructedRange.StrafeRangeLeft = InRangeDegreesLeft;
+	ConstructedRange.StrafeRangeRight = InRangeDegreesRight;
 	return ConstructedRange;
 }
 
-bool UStrafeMovementAnimationController::StrafeDirectionInRange(const int InStrafeDirection, const float InSignedDirectionDegrees) const
+bool UStrafeMovementAnimationController::StrafeDirectionInRange(const EStrafeDirection Direction, const float InSignedDirectionDegrees) const
 {
-	bool bStrafeDirectionInRange = false;
-	FStrafeMovementRange MovementRange = MovementRanges[InStrafeDirection];
-	// To determine strafe movement we test two ranges, strafe direction - strafe range, strafe direction + strafe range.
-	const int NumRanges = 2;
-	float RangeStart = MovementRange.StrafeDirectionDegrees - MovementRange.StrafeRangeDegrees;
-	// To determine strafe movement range all calculations are clockwise.
-	const float ClockWiseDirection = UMerinoMathStatics::ConvertToClockWiseRotationDegrees(InSignedDirectionDegrees);
-	float ClockWiseRangeDegrees = UMerinoMathStatics::ConvertToClockWiseRotationDegrees(RangeStart);
-	for (int i = 0; i < NumRanges; i++)
+	if (MovementRangesMap.Contains(Direction) == false)
 	{
-		bStrafeDirectionInRange = bStrafeDirectionInRange ||
-			UMerinoMathStatics::IsFloatInArbitraryRange(ClockWiseDirection, ClockWiseRangeDegrees, ClockWiseRangeDegrees + MovementRange.StrafeRangeDegrees);
-		ClockWiseRangeDegrees = MovementRange.StrafeDirectionDegrees;
+		UE_LOG(LogTemplateGameplayInvalidConfig, Error, TEXT("No entry for strafe direction %s exists."), *UEnum::GetValueAsString(Direction));
+		return false;
 	}
-	return bStrafeDirectionInRange;
+
+	float RelativeAngle = GetAngleRelativeToStrafeDirection(Direction, InSignedDirectionDegrees);
+	UE_LOG(LogTemp, Log, TEXT("Direction %s Value: %f"), *UEnum::GetValueAsString(Direction), InSignedDirectionDegrees);
+	FStrafeMovementRange MovementRange = MovementRangesMap[Direction];
+	return UMerinoMathStatics::IsFloatInArbitraryRange(RelativeAngle, MovementRange.StrafeRangeLeft, MovementRange.StrafeRangeRight);
 }
 
 bool UStrafeMovementAnimationController::InvalidMovementDirection(const float InMovementDirectionDegrees) const

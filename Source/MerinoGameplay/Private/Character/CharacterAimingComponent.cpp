@@ -30,6 +30,8 @@ void UCharacterAimingComponent::BeginPlay()
 		UE_LOG(LogTemplateGameplayInvalidConfig, Error, TEXT("Character aiming component attached to actor %s that is not a character"), *GetOwner()->GetName());
 		return;
 	}
+	bIsAiming = true;
+
 }
 
 // Called every frame
@@ -46,14 +48,14 @@ void UCharacterAimingComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 
 void UCharacterAimingComponent::TickCharacterAiming(float DeltaTime)
 {
-	if (ElapsedAimDurationSeconds <= 0.0f)
+	/*if (ElapsedAimDurationSeconds <= 0.0f)
 	{
 		ExitCharacterAiming();
 		return;
-	}
+	}*/
 
 	ElapsedAimDurationSeconds -= DeltaTime;
-	UpdateAimDirection();
+	//UpdateAimDirection();
 	UMerinoGameplayStatics::SetControlRotationToDirection(Character->GetController(), AimDirection);
 }
 
@@ -123,13 +125,15 @@ float UCharacterAimingComponent::CalculateRotationOffsetFromDirection(const FVec
 
 float UCharacterAimingComponent::CalculatePitchRotationOffsetDegrees() const
 {
-	float pitchOffset =  UMerinoMathStatics::GetSignedAngleBetweenTwoVectorsRelativeToAxis(AimDirection, GetOwner()->GetActorForwardVector().GetSafeNormal(), GetOwner()->GetActorUpVector());
-	return FMath::RadiansToDegrees(pitchOffset);
+	FVector ReferenceVector = FVector::ForwardVector.RotateAngleAxis(AimDirection.Rotation().Yaw, FVector::UpVector);
+	float PitchOffset =  UMerinoMathStatics::GetSignedAngleBetweenTwoVectorsRelativeToAxis(ReferenceVector, AimDirection, AimDirection.RightVector);
+	return FMath::RadiansToDegrees(PitchOffset);
 }
 
 float UCharacterAimingComponent::CalculateYawRotationOffsetDegrees() const
 {
-	float yawOffset = UMerinoMathStatics::GetSignedAngleBetweenTwoVectorsRelativeToAxis(AimDirection, GetOwner()->GetActorForwardVector().GetSafeNormal(), GetOwner()->GetActorRightVector());
-	return FMath::RadiansToDegrees(yawOffset);
+	FVector AimReferenceVector = FVector::ForwardVector.RotateAngleAxis(AimDirection.Rotation().Yaw, FVector::UpVector);
+	float YawOffset = UMerinoMathStatics::GetSignedAngleBetweenTwoVectorsRelativeToAxis(GetOwner()->GetActorForwardVector().GetSafeNormal(), AimReferenceVector, GetOwner()->GetActorUpVector());
+	return FMath::RadiansToDegrees(YawOffset);
 }
 

@@ -11,7 +11,8 @@ enum class EStrafeDirection : uint8 {
     FORWARD UMETA(DisplayName = "Forward"),
     RIGHT UMETA(DisplayName = "Right"),
     BACKWARD UMETA(DisplayName = "Backward"),
-    LEFT UMETA(DisplayName = "Left")
+    LEFT UMETA(DisplayName = "Left"),
+    NONE UMETA(DisplayName = "NONE")
 };
 
 /*
@@ -24,7 +25,8 @@ struct FStrafeMovementRange
     GENERATED_USTRUCT_BODY()
     float StrafeDirectionDegrees;
     float StrafeDirectionDegreesUnwind;
-    float StrafeRangeDegrees;
+    float StrafeRangeLeft;
+    float StrafeRangeRight;
 };
 
 /**
@@ -34,11 +36,13 @@ UCLASS(BlueprintType)
 class MERINOGAMEPLAY_API UStrafeMovementAnimationController : public UObject
 {
 	GENERATED_BODY()
-    
+
+    UPROPERTY()
+    TMap<EStrafeDirection, FStrafeMovementRange> MovementRangesMap;
     UPROPERTY()
     TArray<FStrafeMovementRange> MovementRanges;
     UPROPERTY()
-    int ActiveStrafeDirection;
+    EStrafeDirection ActiveStrafeDirection;
 
 public:
 
@@ -49,12 +53,19 @@ public:
     float GetAngleRelativeToActiveStrafeDirection(const float InMovementDirectionDegrees) const;
     UFUNCTION(BlueprintCallable, BlueprintPure)
     float GetStrafeDirectionDegrees(const EStrafeDirection InStrafeDirection) const;
+    UFUNCTION(BlueprintCallable)
+    void SetMovementRange(const EStrafeDirection InStrafeDirection, const float InDirectionDegrees, const float InRangeDegreesLeft, const float InRangeDegreesRight);
 
 private:
+    float GetAngleRelativeToStrafeDirection(const EStrafeDirection InStrafeDirection, float InMovementDirectionDegrees) const;
     void ConfigureMovementRanges();
-    FStrafeMovementRange BuildStrafeMovementRange(const float InStrafeDirectionDegrees, const float InStrafeRangeDegrees) const;
-    bool StrafeDirectionInRange(const int InStrafeDirection, const float InSignedDirectionDegrees) const;
+    FStrafeMovementRange BuildStrafeMovementRange(const float InStrafeDirectionDegrees, const float InRangeDegreesLeft, const float InRangeDegreesRight) const;
+    bool StrafeDirectionInRange(const EStrafeDirection Direction, const float InSignedDirectionDegrees) const;
     bool InvalidMovementDirection(const float InMovementDirectionDegrees) const;
     bool InNegativeRange(const FStrafeMovementRange& InMovementRange, const float InMovementDirectionDegrees) const;
     bool InPositiveRange(const FStrafeMovementRange& InMovementRange, const float InMovementDirectionDegrees) const;
+
+public:
+    UFUNCTION(BlueprintCallable, BlueprintPure)
+    FORCEINLINE EStrafeDirection GetActiveStrafeDirection() const { return ActiveStrafeDirection; }
 };

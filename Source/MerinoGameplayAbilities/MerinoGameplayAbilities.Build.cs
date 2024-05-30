@@ -8,6 +8,6 @@ public class MerinoGameplayAbilities : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "GameplayAbilities" });
+		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "GameplayAbilities" });
 	}
 }
