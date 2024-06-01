@@ -46,19 +46,23 @@ class MERINOGAMEPLAY_API UStrafeMovementAnimationController : public UObject
 
 public:
 
+    DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnStrafeDirectionChanged, EStrafeDirection, NewDirection);
+    UPROPERTY(BlueprintAssignable)
+    FOnStrafeDirectionChanged StrafeDirectionChanged;
+
     UStrafeMovementAnimationController();
     UFUNCTION(BlueprintCallable)
-    EStrafeDirection EvaluateActiveStrafeDirection(const float InMovementDirectionDegrees);
+    void EvaluateActiveStrafeDirection(const float InMovementDirectionDegrees);
     UFUNCTION(BlueprintCallable, BlueprintPure)
     float GetAngleRelativeToActiveStrafeDirection(const float InMovementDirectionDegrees) const;
     UFUNCTION(BlueprintCallable, BlueprintPure)
     float GetStrafeDirectionDegrees(const EStrafeDirection InStrafeDirection) const;
+    // Establishes a movement for the inserted direction, using a clock wise direction as the starting point with left and right range.
     UFUNCTION(BlueprintCallable)
-    void SetMovementRange(const EStrafeDirection InStrafeDirection, const float InDirectionDegrees, const float InRangeDegreesLeft, const float InRangeDegreesRight);
+    void SetMovementRange(const EStrafeDirection InStrafeDirection, const float InClockwiseDirectionDegrees, const float InRangeDegreesLeft, const float InRangeDegreesRight);
 
 private:
     float GetAngleRelativeToStrafeDirection(const EStrafeDirection InStrafeDirection, float InMovementDirectionDegrees) const;
-    void ConfigureMovementRanges();
     FStrafeMovementRange BuildStrafeMovementRange(const float InStrafeDirectionDegrees, const float InRangeDegreesLeft, const float InRangeDegreesRight) const;
     bool StrafeDirectionInRange(const EStrafeDirection Direction, const float InSignedDirectionDegrees) const;
     bool InvalidMovementDirection(const float InMovementDirectionDegrees) const;
