@@ -19,6 +19,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = WeaponAttachPoint, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<USceneComponent> WeaponAttachPoint;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category= WeaponAttachPoint, meta= (AllowPrivateAccess="true"))
+	TObjectPtr<USceneComponent> MeshAttachPoint;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category= WeaponVisuals, meta=(AllowPrivateAccess= "true"))
 	TObjectPtr<UStaticMeshComponent> WeaponMesh;
 

@@ -28,6 +28,9 @@ class MERINOGAMEPLAY_API UCharacterAimingComponent : public UActorComponent
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AimInfo", meta = (AllowPrivateAccess = "true"))
 	float ElapsedAimDurationSeconds;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AimInfo", meta = (AllowPrivateAccess = "true"))
+	float AimDistance;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AimInfo", meta = (AllowPrivateAccess="true"))
 	FVector AimDirection;
 
@@ -63,6 +66,24 @@ private:
 
 public:
 
+	/*
+	* Calculates the rotation offset in degrees from the input direction to the current aim direction.
+	*/
 	UFUNCTION(BlueprintCallable, BlueprintPure)
-	FVector GetAimDirection() const;
+	float CalculateRotationOffsetFromDirection(const FVector& InDirection, const FVector& ReferenceAxis) const;
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	float CalculatePitchRotationOffsetDegrees() const;
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	float CalculateYawRotationOffsetDegrees() const;
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	FORCEINLINE FVector GetAimVector() const { return AimDirection * AimDistance; }
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	FORCEINLINE FVector GetAimDirection() const { return AimDirection; }
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	FORCEINLINE bool IsAiming() const { return bIsAiming; }
 };

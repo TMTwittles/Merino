@@ -11,9 +11,11 @@ AEquipableWeapon::AEquipableWeapon()
 
 	WeaponAttachPoint = CreateDefaultSubobject<USceneComponent>("Primary attach point");
 	SetRootComponent(WeaponAttachPoint);
+	MeshAttachPoint = CreateDefaultSubobject<UStaticMeshComponent>("Mesh attach point");
+	MeshAttachPoint->SetupAttachment(WeaponAttachPoint);
 	WeaponMesh = CreateDefaultSubobject<UStaticMeshComponent>("Weapon mesh");
 	WeaponMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	WeaponMesh->SetupAttachment(WeaponAttachPoint);
+	WeaponMesh->SetupAttachment(MeshAttachPoint);
 	IKWeaponAttachPoint = CreateDefaultSubobject<USceneComponent>("IK attach point");
 	IKWeaponAttachPoint->SetupAttachment(WeaponMesh);
 }
@@ -35,7 +37,7 @@ void AEquipableWeapon::Tick(float DeltaTime)
 void AEquipableWeapon::ConfigureWeaponPostAttachment()
 {
 	// Set the relative transform. 
-	GetRootComponent()->SetRelativeTransform(WeaponAttachPointRelativeTransform);
+	//GetRootComponent()->SetRelativeTransform(WeaponAttachPointRelativeTransform);
 }
 
 FTransform AEquipableWeapon::GetIKWeaponAttachPoint() const

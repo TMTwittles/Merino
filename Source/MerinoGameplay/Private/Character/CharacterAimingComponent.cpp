@@ -2,6 +2,7 @@
 #include "Character/CharacterAimingComponent.h"
 #include "MerinoDebugStatics.h"
 #include "MerinoGameplayStatics.h"
+#include "MerinoMathStatics.h"
 #include "MerinoGameplay.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -15,6 +16,7 @@ UCharacterAimingComponent::UCharacterAimingComponent()
 	PrimaryComponentTick.bCanEverTick = true;
 	// ...
 	AimTarget == nullptr;
+	ElapsedAimDurationSeconds = 0.0f;
 }
 
 // Called when the game starts
@@ -28,6 +30,8 @@ void UCharacterAimingComponent::BeginPlay()
 		UE_LOG(LogTemplateGameplayInvalidConfig, Error, TEXT("Character aiming component attached to actor %s that is not a character"), *GetOwner()->GetName());
 		return;
 	}
+	bIsAiming = true;
+
 }
 
 // Called every frame
@@ -37,26 +41,22 @@ void UCharacterAimingComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 
 	if (bIsAiming && Character != nullptr)
 	{
+		UMerinoDebugStatics::DrawSingleFrameDebugLine(GetWorld(), GetOwner()->GetActorLocation(), GetOwner()->GetActorLocation() + AimDirection * 1000.0f, FColor::Red);
 		TickCharacterAiming(DeltaTime);
 	}
 }
 
 void UCharacterAimingComponent::TickCharacterAiming(float DeltaTime)
 {
-	if (ElapsedAimDurationSeconds <= 0.0f)
+	/*if (ElapsedAimDurationSeconds <= 0.0f)
 	{
 		ExitCharacterAiming();
 		return;
-	}
+	}*/
 
 	ElapsedAimDurationSeconds -= DeltaTime;
-	UpdateAimDirection();
+	//UpdateAimDirection();
 	UMerinoGameplayStatics::SetControlRotationToDirection(Character->GetController(), AimDirection);
-}
-
-FVector UCharacterAimingComponent::GetAimDirection() const
-{
-	return AimDirection;
 }
 
 void UCharacterAimingComponent::RefreshCharacterAiming()
@@ -112,5 +112,28 @@ void UCharacterAimingComponent::ExitCharacterAiming()
 	ElapsedAimDurationSeconds = 0.0f;
 	Character->GetCharacterMovement()->bOrientRotationToMovement = true;
 	Character->GetCharacterMovement()->bUseControllerDesiredRotation = false;
+}
+
+float UCharacterAimingComponent::CalculateRotationOffsetFromDirection(const FVector& InDirection, const FVector& ReferenceAxis) const
+{
+	float offset = UMerinoMathStatics::GetSignedAngleBetweenTwoVectorsRelativeToAxis(InDirection, AimDirection, ReferenceAxis);
+	FVector StartLocation = GetOwner()->GetActorLocation() + GetOwner()->GetActorForwardVector().GetSafeNormal() * 100;
+	UMerinoDebugStatics::DrawSingleFrameDebugLine(GetWorld(), StartLocation, StartLocation + AimDirection * 1000.0f, FColor::Red);
+	UMerinoDebugStatics::DrawSingleFrameDebugLine(GetWorld(), StartLocation, StartLocation + InDirection * 1000.0f, FColor::Green);
+	return FMath::RadiansToDegrees(offset);
+}
+
+float UCharacterAimingComponent::CalculatePitchRotationOffsetDegrees() const
+{
+	FVector ReferenceVector = FVector::ForwardVector.RotateAngleAxis(AimDirection.Rotation().Yaw, FVector::UpVector);
+	float PitchOffset =  UMerinoMathStatics::GetSignedAngleBetweenTwoVectorsRelativeToAxis(ReferenceVector, AimDirection, AimDirection.RightVector);
+	return FMath::RadiansToDegrees(PitchOffset);
+}
+
+float UCharacterAimingComponent::CalculateYawRotationOffsetDegrees() const
+{
+	FVector AimReferenceVector = FVector::ForwardVector.RotateAngleAxis(AimDirection.Rotation().Yaw, FVector::UpVector);
+	float YawOffset = UMerinoMathStatics::GetSignedAngleBetweenTwoVectorsRelativeToAxis(GetOwner()->GetActorForwardVector().GetSafeNormal(), AimReferenceVector, GetOwner()->GetActorUpVector());
+	return FMath::RadiansToDegrees(YawOffset);
 }
 
