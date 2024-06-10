@@ -17,6 +17,7 @@ UCharacterAimingComponent::UCharacterAimingComponent()
 	// ...
 	AimTarget == nullptr;
 	ElapsedAimDurationSeconds = 0.0f;
+	bIsAiming = false;
 }
 
 // Called when the game starts
@@ -30,7 +31,6 @@ void UCharacterAimingComponent::BeginPlay()
 		UE_LOG(LogTemplateGameplayInvalidConfig, Error, TEXT("Character aiming component attached to actor %s that is not a character"), *GetOwner()->GetName());
 		return;
 	}
-	bIsAiming = true;
 
 }
 
@@ -48,22 +48,22 @@ void UCharacterAimingComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 
 void UCharacterAimingComponent::TickCharacterAiming(float DeltaTime)
 {
-	/*if (ElapsedAimDurationSeconds <= 0.0f)
+	if (ElapsedAimDurationSeconds <= 0.0f)
 	{
 		ExitCharacterAiming();
 		return;
-	}*/
+	}
 
 	ElapsedAimDurationSeconds -= DeltaTime;
-	//UpdateAimDirection();
+	UpdateAimDirection();
 	UMerinoGameplayStatics::SetControlRotationToDirection(Character->GetController(), AimDirection);
 }
 
 void UCharacterAimingComponent::RefreshCharacterAiming()
 {
-	EnterCharacterAiming();
-	UpdateAimTarget();
-	UpdateAimDirection();
+	//EnterCharacterAiming();
+	//UpdateAimTarget();
+	//UpdateAimDirection();
 }
 
 void UCharacterAimingComponent::UpdateAimTarget()

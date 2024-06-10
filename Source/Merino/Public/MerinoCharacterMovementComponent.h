@@ -14,4 +14,6 @@ class MERINO_API UMerinoCharacterMovementComponent : public UCharacterMovementCo
 {
 	GENERATED_BODY()
 	
+public:
+	UMerinoCharacterMovementComponent();
 };

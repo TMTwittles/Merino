@@ -3,3 +3,6 @@
 
 #include "MerinoCharacterMovementComponent.h"
 
+UMerinoCharacterMovementComponent::UMerinoCharacterMovementComponent()
+{
+}
